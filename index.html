@@ -1,0 +1,3230 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MISI 2: DETEKTIF MAKLUMAT - Cari Petunjuk, Bongkar Maklumat!</title>
+  <style>
+    /* ==========================================================================
+       1. PEMBOLEHUBAH WARNA & GAYA PIXEL-ART (PALET DETEKTIF CILIK)
+       ========================================================================== */
+    :root {
+      --gold: #FFD166;
+      --gold-dark: #E0A82E;
+      --pastel-blue: #A2D2FF;
+      --pastel-blue-dark: #5FA8E8;
+      --soft-purple: #CDB4DB;
+      --soft-purple-dark: #9B72B0;
+      --mint-green: #B8F2E6;
+      --mint-green-dark: #4CC9B0;
+      --cream-bg: #FFF9EB;
+      --wood-light: #C68B59;
+      --wood-mid: #9C6644;
+      --wood-dark: #582F0E;
+      --wall-top: #7B6D8D;
+      --wall-bottom: #5E5073;
+      --ink: #231F20;
+      --white: #FFFFFF;
+      --danger: #EF476F;
+      --success: #06D6A0;
+      --pixel-border: 4px solid #231F20;
+      --pixel-shadow: 0 5px 0 #231F20;
+      --pixel-shadow-sm: 0 3px 0 #231F20;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      width: 100%;
+      max-width: 100%;
+      overflow-x: hidden;
+      background-color: #2B2438;
+      color: var(--ink);
+      font-family: "Trebuchet MS", "Verdana", "Segoe UI", system-ui, sans-serif;
+      line-height: 1.5;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Gaya tulisan tajuk bergaya retro pixel yang kekal jelas dibaca */
+    .pixel-font {
+      font-family: "Courier New", "Lucida Console", monospace;
+      font-weight: 900;
+      letter-spacing: 0.5px;
+    }
+
+    /* Kawalan hentikan animasi */
+    body.reduce-motion *,
+    body.reduce-motion *::before,
+    body.reduce-motion *::after {
+      animation: none !important;
+      transition: none !important;
+    }
+
+    /* ==========================================================================
+       2. BEKAS UTAMA (SESUAI UNTUK EMBED GOOGLE SITES)
+       ========================================================================== */
+    .game-wrapper {
+      width: 100%;
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* ==========================================================================
+       3. BAR KAWALAN ATAS (HUD DETEKTIF)
+       ========================================================================== */
+    .hud-bar {
+      background: linear-gradient(180deg, var(--gold) 0%, #F7C244 100%);
+      border: var(--pixel-border);
+      border-radius: 12px;
+      box-shadow: var(--pixel-shadow);
+      padding: 10px 14px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      z-index: 20;
+    }
+
+    .hud-left {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .mission-badge {
+      background: var(--ink);
+      color: var(--gold);
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 800;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .progress-pill {
+      background: var(--mint-green);
+      border: 3px solid var(--ink);
+      border-radius: 8px;
+      padding: 5px 12px;
+      font-weight: 800;
+      font-size: 0.92rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: var(--pixel-shadow-sm);
+    }
+
+    .level-pill {
+      background: var(--soft-purple);
+      border: 3px solid var(--ink);
+      border-radius: 8px;
+      padding: 5px 10px;
+      font-weight: 800;
+      font-size: 0.82rem;
+    }
+
+    .hud-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Butang Pixel Retro */
+    .btn-pixel {
+      appearance: none;
+      border: 3px solid var(--ink);
+      border-radius: 10px;
+      padding: 8px 12px;
+      font-weight: 800;
+      font-size: 0.85rem;
+      cursor: pointer;
+      background: var(--white);
+      color: var(--ink);
+      box-shadow: var(--pixel-shadow-sm);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: transform 0.08s ease, box-shadow 0.08s ease, background-color 0.15s ease;
+      text-align: center;
+    }
+
+    .btn-pixel:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 0 var(--ink);
+    }
+
+    .btn-pixel:active:not(:disabled) {
+      transform: translateY(2px);
+      box-shadow: 0 1px 0 var(--ink);
+    }
+
+    .btn-pixel:focus-visible {
+      outline: 3px dashed #FF006E;
+      outline-offset: 2px;
+    }
+
+    .btn-pixel:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    .btn-blue { background: var(--pastel-blue); }
+    .btn-purple { background: var(--soft-purple); }
+    .btn-mint { background: var(--mint-green); }
+    .btn-gold { background: var(--gold); }
+    .btn-success { background: var(--success); color: var(--ink); }
+    .btn-danger { background: var(--danger); color: var(--white); }
+
+    .btn-lg {
+      font-size: 1.05rem;
+      padding: 13px 22px;
+      border-width: 4px;
+      box-shadow: var(--pixel-shadow);
+    }
+
+    /* ==========================================================================
+       4. BILIK PENYIASATAN INTERAKTIF (KANVAS SVG PIXEL-ART)
+       ========================================================================== */
+    .room-stage {
+      position: relative;
+      width: 100%;
+      background: #3D3252;
+      border: var(--pixel-border);
+      border-radius: 16px;
+      box-shadow: 0 8px 0 #16121E;
+      overflow: hidden;
+    }
+
+    .room-instruction-strip {
+      background: rgba(35, 31, 32, 0.9);
+      color: var(--cream-bg);
+      padding: 8px 14px;
+      font-size: 0.9rem;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      border-bottom: 3px solid var(--ink);
+    }
+
+    .room-instruction-strip span strong {
+      color: var(--gold);
+    }
+
+    .svg-scene-container {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      min-height: 310px;
+      max-height: 620px;
+      background: #4A3F63;
+      user-select: none;
+    }
+
+    svg#detective-room {
+      width: 100%;
+      height: 100%;
+      display: block;
+      shape-rendering: crispEdges;
+    }
+
+    /* Animasi elemen bilik */
+    @keyframes starTwinkle {
+      0%, 100% { opacity: 0.25; transform: scale(0.9); }
+      50% { opacity: 1; transform: scale(1.15); }
+    }
+
+    @keyframes lampGlow {
+      0%, 100% { opacity: 0.35; }
+      50% { opacity: 0.55; }
+    }
+
+    @keyframes cluePulse {
+      0%, 100% {
+        filter: drop-shadow(0 0 3px #FFD166) drop-shadow(0 0 8px #FFD166);
+        transform: translateY(0px);
+      }
+      50% {
+        filter: drop-shadow(0 0 8px #B8F2E6) drop-shadow(0 0 16px #FFD166);
+        transform: translateY(-4px);
+      }
+    }
+
+    .twinkle-1 { animation: starTwinkle 2.4s infinite ease-in-out; transform-origin: center; }
+    .twinkle-2 { animation: starTwinkle 3.1s infinite ease-in-out 0.8s; transform-origin: center; }
+    .twinkle-3 { animation: starTwinkle 2.8s infinite ease-in-out 1.4s; transform-origin: center; }
+    .lamp-cone { animation: lampGlow 3.5s infinite ease-in-out; pointer-events: none; }
+
+    /* Objek boleh diklik dalam bilik */
+    .clue-hotspot {
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    .clue-hotspot:not(.solved) {
+      animation: cluePulse 2.2s infinite ease-in-out;
+    }
+
+    .clue-hotspot:hover,
+    .clue-hotspot:focus-visible {
+      outline: none;
+      filter: drop-shadow(0 0 10px #FFFFFF) drop-shadow(0 0 18px #FFD166) !important;
+    }
+
+    .clue-hotspot.solved {
+      filter: drop-shadow(0 0 6px #06D6A0);
+    }
+
+    .clue-label-tag {
+      pointer-events: none;
+    }
+
+    /* Bar akses pantas objek di bawah bilik (untuk mudah ditekan di telefon/tablet) */
+    .quick-objects-bar {
+      background: var(--cream-bg);
+      border-top: 4px solid var(--ink);
+      padding: 10px 12px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+
+    .obj-card-btn {
+      background: var(--white);
+      border: 3px solid var(--ink);
+      border-radius: 10px;
+      padding: 8px 6px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      font-weight: 800;
+      font-size: 0.82rem;
+      box-shadow: var(--pixel-shadow-sm);
+      transition: transform 0.1s ease, background-color 0.15s ease;
+      position: relative;
+    }
+
+    .obj-card-btn:hover {
+      background: #FFF3D1;
+      transform: translateY(-2px);
+    }
+
+    .obj-card-btn.solved {
+      background: var(--mint-green);
+      border-color: #059669;
+    }
+
+    .obj-card-btn .status-chip {
+      font-size: 0.72rem;
+      padding: 2px 6px;
+      border-radius: 6px;
+      background: var(--gold);
+      border: 2px solid var(--ink);
+    }
+
+    .obj-card-btn.solved .status-chip {
+      background: var(--success);
+    }
+
+    /* ==========================================================================
+       5. PAPARAN PERMULAAN (START SCREEN OVERLAY)
+       ========================================================================== */
+    .overlay-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(24, 19, 36, 0.86);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px;
+      z-index: 100;
+      overflow-y: auto;
+    }
+
+    .overlay-backdrop.hidden {
+      display: none !important;
+    }
+
+    .pixel-modal {
+      background: var(--cream-bg);
+      border: 5px solid var(--ink);
+      border-radius: 18px;
+      box-shadow: 0 10px 0 var(--ink);
+      width: 100%;
+      max-width: 720px;
+      max-height: 92vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      animation: popIn 0.22s ease-out;
+    }
+
+    @keyframes popIn {
+      from { opacity: 0; transform: scale(0.94) translateY(8px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .modal-header {
+      background: linear-gradient(90deg, var(--pastel-blue) 0%, var(--soft-purple) 50%, var(--gold) 100%);
+      border-bottom: 4px solid var(--ink);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .modal-title {
+      font-size: 1.15rem;
+      font-weight: 900;
+      color: var(--ink);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .modal-body {
+      padding: 16px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .modal-footer {
+      background: #F3EAD3;
+      border-top: 3px solid var(--ink);
+      padding: 10px 16px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    /* Kad Skrin Permulaan */
+    .start-card {
+      text-align: center;
+      background: linear-gradient(180deg, #FFFDF7 0%, #FFF2D6 100%);
+    }
+
+    .start-hero-box {
+      background: #3E3356;
+      border: 4px solid var(--ink);
+      border-radius: 14px;
+      padding: 16px;
+      color: var(--white);
+      position: relative;
+    }
+
+    .start-subtitle {
+      display: inline-block;
+      background: var(--mint-green);
+      color: var(--ink);
+      border: 3px solid var(--ink);
+      border-radius: 999px;
+      padding: 4px 14px;
+      font-weight: 800;
+      font-size: 0.85rem;
+      margin-bottom: 10px;
+    }
+
+    .start-main-title {
+      font-size: 1.6rem;
+      color: var(--gold);
+      text-shadow: 3px 3px 0 var(--ink);
+      margin-bottom: 8px;
+    }
+
+    .welcome-speech-box {
+      background: var(--white);
+      border: 3px solid var(--ink);
+      border-radius: 12px;
+      padding: 14px;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--ink);
+      box-shadow: var(--pixel-shadow-sm);
+    }
+
+    /* ==========================================================================
+       6. KOMPONEN MODAL PETUNJUK & SOALAN
+       ========================================================================== */
+    .clue-top-banner {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 14px;
+      background: var(--white);
+      border: 3px solid var(--ink);
+      border-radius: 12px;
+      padding: 12px;
+    }
+
+    .clue-icon-frame {
+      width: 76px;
+      height: 76px;
+      background: var(--pastel-blue);
+      border: 3px solid var(--ink);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .audio-control-panel {
+      flex: 1;
+      min-width: 220px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .audio-btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .audio-status-msg {
+      font-size: 0.85rem;
+      background: #EEF6FF;
+      border: 2px solid var(--pastel-blue-dark);
+      border-radius: 8px;
+      padding: 6px 10px;
+      color: #1E3A5F;
+      font-weight: 600;
+    }
+
+    .audio-status-msg.warning {
+      background: #FFF3CD;
+      border-color: #D97706;
+      color: #78350F;
+    }
+
+    .mp3-fallback-box {
+      background: #F8FAFC;
+      border: 2px dashed #64748B;
+      border-radius: 8px;
+      padding: 8px;
+      font-size: 0.82rem;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .mp3-fallback-box audio {
+      width: 100%;
+      height: 34px;
+    }
+
+    /* Kotak Sokongan Bimbingan / Transkrip */
+    .support-box {
+      background: #E8FBF6;
+      border: 3px solid var(--ink);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 0.92rem;
+    }
+
+    .keyword-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 6px;
+    }
+
+    .keyword-chip {
+      background: var(--gold);
+      border: 2px solid var(--ink);
+      border-radius: 6px;
+      padding: 2px 8px;
+      font-weight: 800;
+      font-size: 0.82rem;
+    }
+
+    .transcript-box {
+      background: #FFFBEB;
+      border: 3px dashed var(--ink);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+
+    /* Bahagian Soalan */
+    .question-card {
+      background: var(--white);
+      border: 4px solid var(--ink);
+      border-radius: 14px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .question-card.locked {
+      opacity: 0.65;
+      background: #EFECE6;
+    }
+
+    .step-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 8px;
+      border: 2px solid var(--ink);
+      font-weight: 800;
+      font-size: 0.82rem;
+      width: fit-content;
+    }
+
+    .step-tersurat { background: var(--pastel-blue); }
+    .step-tersirat { background: var(--soft-purple); }
+    .step-lanjutan { background: var(--gold); }
+
+    .question-text {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: var(--ink);
+    }
+
+    .options-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+
+    .option-btn {
+      width: 100%;
+      text-align: left;
+      background: #F9FAFB;
+      border: 3px solid var(--ink);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 0.96rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 3px 0 var(--ink);
+      transition: background-color 0.12s ease, transform 0.08s ease;
+    }
+
+    .option-btn:hover:not(:disabled) {
+      background: #FEF3C7;
+      transform: translateX(3px);
+    }
+
+    .option-btn:disabled {
+      cursor: not-allowed;
+      opacity: 0.7;
+    }
+
+    .option-btn.wrong-picked {
+      background: #FFE4E6;
+      border-color: var(--danger);
+    }
+
+    .option-btn.correct-picked {
+      background: #D1FAE5;
+      border-color: #059669;
+    }
+
+    .opt-letter {
+      background: var(--gold);
+      border: 2px solid var(--ink);
+      border-radius: 6px;
+      width: 30px;
+      height: 30px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      flex-shrink: 0;
+    }
+
+    /* Kotak Maklum Balas */
+    .feedback-banner {
+      border: 3px solid var(--ink);
+      border-radius: 12px;
+      padding: 12px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .feedback-success {
+      background: #D1FAE5;
+      color: #064E3B;
+    }
+
+    .feedback-error {
+      background: #FFE4E6;
+      color: #881337;
+    }
+
+    .extra-hint-box {
+      background: #FEF9C3;
+      border: 2px solid #CA8A04;
+      border-radius: 8px;
+      padding: 8px 10px;
+      color: #713F12;
+      font-size: 0.9rem;
+    }
+
+    /* Kotak Lanjutan (Alasan Inferens) */
+    .lanjutan-textarea {
+      width: 100%;
+      min-height: 76px;
+      border: 3px solid var(--ink);
+      border-radius: 10px;
+      padding: 10px;
+      font-family: inherit;
+      font-size: 0.95rem;
+      resize: vertical;
+    }
+
+    /* ==========================================================================
+       7. MODAL BUKU PANDUAN & BANTUAN TERBEZA
+       ========================================================================== */
+    .guide-box {
+      background: var(--white);
+      border: 3px solid var(--ink);
+      border-radius: 12px;
+      padding: 12px;
+    }
+
+    .guide-box h3 {
+      margin-bottom: 4px;
+      font-size: 1.02rem;
+    }
+
+    .example-card {
+      background: #FFF8E1;
+      border: 3px dashed var(--ink);
+      border-radius: 12px;
+      padding: 12px;
+    }
+
+    .diff-option-card {
+      background: var(--white);
+      border: 3px solid var(--ink);
+      border-radius: 12px;
+      padding: 12px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      transition: background-color 0.15s ease;
+    }
+
+    .diff-option-card.active {
+      background: var(--mint-green);
+      box-shadow: var(--pixel-shadow-sm);
+    }
+
+    /* ==========================================================================
+       8. CABARAN AKHIR & LENCANA PENGHARGAAN
+       ========================================================================== */
+    .badge-showcase {
+      background: linear-gradient(135deg, #3B2F54 0%, #231B33 100%);
+      border: 4px solid var(--ink);
+      border-radius: 14px;
+      padding: 16px;
+      text-align: center;
+      color: var(--white);
+    }
+
+    .oral-challenge-box {
+      background: #EEF6FF;
+      border: 3px solid var(--ink);
+      border-radius: 12px;
+      padding: 14px;
+    }
+
+    .sentence-frame {
+      background: var(--white);
+      border-left: 6px solid var(--soft-purple-dark);
+      border-top: 2px solid var(--ink);
+      border-right: 2px solid var(--ink);
+      border-bottom: 2px solid var(--ink);
+      border-radius: 8px;
+      padding: 10px 12px;
+      margin-top: 8px;
+      font-weight: 800;
+      color: var(--ink);
+    }
+
+    /* ==========================================================================
+       8B. BORANG PENDAFTARAN DETEKTIF & STUDIO RAKAMAN SUARA
+       ========================================================================== */
+    .reg-card-box {
+      background: #FFFDF7;
+      border: 4px solid var(--ink);
+      border-radius: 14px;
+      padding: 14px;
+      text-align: left;
+      box-shadow: var(--pixel-shadow-sm);
+    }
+
+    .reg-card-title {
+      font-size: 1.05rem;
+      font-weight: 900;
+      color: var(--ink);
+      background: var(--gold);
+      border: 3px solid var(--ink);
+      border-radius: 8px;
+      padding: 6px 12px;
+      margin-bottom: 12px;
+      display: inline-block;
+    }
+
+    .reg-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .reg-field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .reg-field label {
+      font-weight: 800;
+      font-size: 0.9rem;
+      color: var(--ink);
+    }
+
+    .pixel-input {
+      width: 100%;
+      border: 3px solid var(--ink);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-family: inherit;
+      font-size: 0.98rem;
+      font-weight: 700;
+      background: var(--white);
+      color: var(--ink);
+    }
+
+    .pixel-input:focus {
+      outline: none;
+      background: #FFFBEB;
+      box-shadow: 0 0 0 3px var(--pastel-blue-dark);
+    }
+
+    .reg-error-msg {
+      margin-top: 8px;
+      background: #FFE4E6;
+      border: 2px solid var(--danger);
+      border-radius: 8px;
+      padding: 6px 10px;
+      color: #881337;
+      font-weight: 800;
+      font-size: 0.86rem;
+      display: none;
+    }
+
+    .detective-id-pill {
+      background: var(--white);
+      border: 3px solid var(--ink);
+      border-radius: 8px;
+      padding: 5px 10px;
+      font-weight: 800;
+      font-size: 0.85rem;
+      color: var(--ink);
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    /* Studio Rakaman Suara */
+    .voice-studio-box {
+      background: #FFFDF7;
+      border: 4px solid var(--ink);
+      border-radius: 14px;
+      padding: 14px;
+      margin-top: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .studio-header-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .rec-timer-pill {
+      background: var(--ink);
+      color: var(--mint-green);
+      border-radius: 8px;
+      padding: 4px 10px;
+      font-family: "Courier New", monospace;
+      font-weight: 900;
+      font-size: 0.92rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .rec-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #64748B;
+      display: inline-block;
+    }
+
+    .rec-dot.recording {
+      background: var(--danger);
+      animation: recBlink 0.9s infinite;
+    }
+
+    @keyframes recBlink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.25; }
+    }
+
+    .studio-btn-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .playback-panel {
+      background: #F1F5F9;
+      border: 3px solid var(--ink);
+      border-radius: 10px;
+      padding: 10px;
+      display: none;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .playback-panel audio {
+      width: 100%;
+      height: 36px;
+    }
+
+    .file-meta-tag {
+      font-size: 0.82rem;
+      font-weight: 800;
+      color: #1E293B;
+      background: var(--mint-green);
+      border: 2px solid var(--ink);
+      border-radius: 6px;
+      padding: 4px 8px;
+      word-break: break-all;
+    }
+
+    .studio-status-banner {
+      border: 3px solid var(--ink);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      background: #EEF6FF;
+      color: #1E3A5F;
+    }
+
+    .studio-status-banner.warning {
+      background: #FEF3C7;
+      border-color: #D97706;
+      color: #78350F;
+    }
+
+    .studio-status-banner.error {
+      background: #FFE4E6;
+      border-color: var(--danger);
+      color: #881337;
+    }
+
+    .studio-status-banner.success {
+      background: #D1FAE5;
+      border-color: #059669;
+      color: #064E3B;
+    }
+
+    .iframe-mic-helper {
+      background: #F8FAFC;
+      border: 2px dashed #64748B;
+      border-radius: 10px;
+      padding: 10px;
+      font-size: 0.82rem;
+      color: #334155;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    @media (max-width: 600px) {
+      .reg-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* ==========================================================================
+       9. ANIMASI BINTANG KEJAYAAN TERAPUNG
+       ========================================================================== */
+    .star-burst-layer {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 999;
+      overflow: hidden;
+    }
+
+    .floating-star {
+      position: absolute;
+      font-size: 1.6rem;
+      animation: starFly 1.1s ease-out forwards;
+    }
+
+    @keyframes starFly {
+      0% { opacity: 1; transform: translate(0, 0) scale(0.6) rotate(0deg); }
+      100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(1.4) rotate(180deg); }
+    }
+
+    /* ==========================================================================
+       10. RESPONSIF UNTUK TABLET, TELEFON & GOOGLE SITES EMBED
+       ========================================================================== */
+    @media (max-width: 768px) {
+      .game-wrapper {
+        padding: 6px;
+      }
+      .hud-bar {
+        padding: 8px 10px;
+      }
+      .btn-pixel {
+        padding: 7px 9px;
+        font-size: 0.78rem;
+      }
+      .quick-objects-bar {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .start-main-title {
+        font-size: 1.25rem;
+      }
+      .modal-title {
+        font-size: 1rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .svg-scene-container {
+        aspect-ratio: 4 / 3;
+        min-height: 260px;
+      }
+      .clue-icon-frame {
+        width: 60px;
+        height: 60px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Lapisan Animasi Bintang Kejayaan -->
+  <div id="star-burst-layer" class="star-burst-layer" aria-hidden="true"></div>
+
+  <!-- ========================================================================
+       PAPARAN PERMULAAN (START SCREEN)
+       ======================================================================== -->
+  <div id="start-overlay" class="overlay-backdrop" role="dialog" aria-modal="true" aria-labelledby="start-title">
+    <div class="pixel-modal start-card">
+      <div class="modal-header">
+        <span class="modal-title pixel-font">🕵️‍♂️ MISI 2: DETEKTIF MAKLUMAT</span>
+        <span class="mission-badge">BM TAHUN 4</span>
+      </div>
+      <div class="modal-body">
+        <div class="start-hero-box">
+          <div class="start-subtitle">🌟 Tema: Misi Detektif Kesihatan — Pilih Gaya Hidup Sihat</div>
+          <h1 id="start-title" class="start-main-title pixel-font">🔎 BILIK PENYIASATAN DETEKTIF</h1>
+          <p style="color: #E2D9F3; font-size: 0.92rem;">Cari Petunjuk, Bongkar Maklumat!</p>
+
+          <!-- Ilustrasi Mini Lencana Detektif Pixel SVG -->
+          <svg width="88" height="76" viewBox="0 0 24 21" style="margin: 8px auto 0; display: block; shape-rendering: crispEdges;" aria-hidden="true">
+            <rect x="8" y="1" width="8" height="2" fill="#FFD166"/>
+            <rect x="6" y="3" width="12" height="2" fill="#E0A82E"/>
+            <rect x="4" y="5" width="16" height="2" fill="#231F20"/>
+            <rect x="7" y="7" width="10" height="7" fill="#FFDCB1"/>
+            <rect x="9" y="9" width="2" height="2" fill="#231F20"/>
+            <rect x="13" y="9" width="2" height="2" fill="#231F20"/>
+            <rect x="10" y="12" width="4" height="1" fill="#EF476F"/>
+            <rect x="6" y="14" width="12" height="6" fill="#A2D2FF"/>
+            <rect x="10" y="14" width="4" height="6" fill="#FFD166"/>
+            <rect x="16" y="12" width="5" height="5" fill="#B8F2E6" stroke="#231F20" stroke-width="1"/>
+            <rect x="15" y="17" width="2" height="3" fill="#9C6644"/>
+          </svg>
+        </div>
+
+        <div class="welcome-speech-box">
+          "Selamat datang, Detektif Cilik! Empat petunjuk rahsia telah disembunyikan di dalam bilik ini. Dengar setiap petunjuk dengan teliti, cari maklumat tersurat dan bongkar maklumat tersirat!"
+        </div>
+
+        <!-- BORANG PENDAFTARAN DETEKTIF CILIK -->
+        <form id="detective-reg-form" class="reg-card-box" novalidate>
+          <div class="reg-card-title pixel-font">🔎 DAFTAR MASUK DETEKTIF CILIK</div>
+          <div class="reg-grid">
+            <div class="reg-field">
+              <label for="input-detective-name">👤 Nama Detektif</label>
+              <input
+                type="text"
+                id="input-detective-name"
+                class="pixel-input"
+                placeholder="Contoh: Aisyah"
+                maxlength="40"
+                autocomplete="off"
+                required
+              />
+            </div>
+            <div class="reg-field">
+              <label for="input-detective-class">🏫 Kelas</label>
+              <input
+                type="text"
+                id="input-detective-class"
+                class="pixel-input"
+                placeholder="Contoh: 4 Bestari"
+                maxlength="25"
+                autocomplete="off"
+                required
+              />
+            </div>
+          </div>
+          <div id="reg-error-msg" class="reg-error-msg" role="alert">
+            ⚠️ Sila isi kedua-dua ruangan <strong>Nama Detektif</strong> dan <strong>Kelas</strong> sebelum memulakan penyiasatan!
+          </div>
+
+          <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 14px;">
+            <button type="submit" id="btn-start-game" class="btn-pixel btn-gold btn-lg">
+              🚀 MULAKAN PENYIASATAN!
+            </button>
+            <button type="button" id="btn-start-guide" class="btn-pixel btn-blue">
+              📖 BUKU PANDUAN DETEKTIF
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       ANTARA MUKA UTAMA PERMAINAN
+       ======================================================================== -->
+  <main class="game-wrapper">
+    <!-- BAR KAWALAN ATAS (HUD) -->
+    <header class="hud-bar">
+      <div class="hud-left">
+        <div class="mission-badge pixel-font">🔎 MISI 2</div>
+        <div id="hud-detective-badge" class="detective-id-pill" title="Maklumat Detektif Aktif">
+          👤 Detektif: -
+        </div>
+        <div id="progress-display" class="progress-pill" aria-live="polite">
+          🔎 PETUNJUK DITEMUI: 0/4
+        </div>
+        <div id="level-indicator" class="level-pill">
+          🔵 Tahap: Sederhana
+        </div>
+      </div>
+
+      <div class="hud-actions">
+        <button id="btn-open-guide" type="button" class="btn-pixel btn-blue" title="Baca penerangan Maklumat Tersurat & Tersirat">
+          📖 BUKU PANDUAN DETEKTIF
+        </button>
+        <button id="btn-open-diff" type="button" class="btn-pixel btn-purple" title="Pilih tahap bantuan pembelajaran">
+          🧭 BANTUAN DETEKTIF
+        </button>
+        <button id="btn-toggle-anim" type="button" class="btn-pixel btn-mint" aria-pressed="false" title="Hentikan atau aktifkan animasi">
+          ✨ Animasi: HIDUP
+        </button>
+        <button id="btn-toggle-sfx" type="button" class="btn-pixel btn-gold" aria-pressed="false" title="Hidupkan atau matikan kesan bunyi">
+          🔊 Bunyi: HIDUP
+        </button>
+        <button id="btn-switch-user" type="button" class="btn-pixel" title="Tukar pengguna atau mulakan sesi baharu">
+          🔄 Sesi Baharu
+        </button>
+      </div>
+    </header>
+
+    <!-- BILIK PENYIASATAN RAHSIA (PIXEL-ART 2D SVG) -->
+    <section class="room-stage" aria-label="Bilik Penyiasatan Rahsia Detektif">
+      <div class="room-instruction-strip">
+        <span>🕵️‍♀️ <strong>Arahan Misi:</strong> Klik mana-mana <strong>4 objek bercahaya</strong> di dalam bilik atau pada butang di bawah untuk mendengar petunjuk!</span>
+        <span id="final-shortcut-wrap" style="display: none;">
+          <button id="btn-open-final" type="button" class="btn-pixel btn-success" style="padding: 4px 10px; font-size: 0.8rem;">
+            🏆 Lihat Lencana & Cabaran Lisan
+          </button>
+        </span>
+      </div>
+
+      <div class="svg-scene-container">
+        <!-- KANVAS BILIK PENYIASATAN PIXEL-ART 2D LENGKAP -->
+        <svg id="detective-room" viewBox="0 0 800 450" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Bilik penyiasatan detektif dengan rak buku, papan penyiasatan, peta Bandar Ceria, meja kayu, komputer kecil, lampu meja, kanta pembesar dan 4 objek petunjuk.">
+          <defs>
+            <!-- Corak kayu meja -->
+            <pattern id="woodPattern" width="32" height="16" patternUnits="userSpaceOnUse">
+              <rect width="32" height="16" fill="#B57644"/>
+              <rect x="0" y="0" width="32" height="2" fill="#9C6644"/>
+              <rect x="4" y="8" width="12" height="2" fill="#C68B59"/>
+              <rect x="20" y="12" width="10" height="2" fill="#8C583A"/>
+            </pattern>
+            <!-- Corak papan gabus -->
+            <pattern id="corkPattern" width="16" height="16" patternUnits="userSpaceOnUse">
+              <rect width="16" height="16" fill="#D4A373"/>
+              <rect x="2" y="3" width="2" height="2" fill="#BC8A5F"/>
+              <rect x="10" y="11" width="2" height="2" fill="#E6CCB2"/>
+            </pattern>
+            <!-- Cahaya lampu meja -->
+            <radialGradient id="lampLightGrad" cx="50%" cy="20%" r="75%">
+              <stop offset="0%" stop-color="#FFF3B0" stop-opacity="0.75"/>
+              <stop offset="65%" stop-color="#FFD166" stop-opacity="0.22"/>
+              <stop offset="100%" stop-color="#FFD166" stop-opacity="0"/>
+            </radialGradient>
+          </defs>
+
+          <!-- 1. DINDING BILIK & LANTAI PIXEL -->
+          <rect x="0" y="0" width="800" height="310" fill="#6D5E82"/>
+          <!-- Jalur hiasan dinding -->
+          <rect x="0" y="0" width="800" height="18" fill="#4A3F5C"/>
+          <rect x="0" y="210" width="800" height="100" fill="#5B4D70"/>
+          <rect x="0" y="206" width="800" height="8" fill="#3D3252"/>
+          <!-- Lantai papan kayu -->
+          <rect x="0" y="310" width="800" height="140" fill="#43364F"/>
+          <rect x="0" y="310" width="800" height="6" fill="#231F20"/>
+          <line x1="0" y1="345" x2="800" y2="345" stroke="#32273D" stroke-width="3"/>
+          <line x1="0" y1="385" x2="800" y2="385" stroke="#32273D" stroke-width="3"/>
+          <line x1="0" y1="425" x2="800" y2="425" stroke="#32273D" stroke-width="3"/>
+
+          <!-- 2. TINGKAP MALAM BERBINTANG (KIRI ATAS) -->
+          <g id="window-stars">
+            <rect x="28" y="34" width="116" height="112" fill="#231F20"/>
+            <rect x="34" y="40" width="104" height="100" fill="#1D2B53"/>
+            <!-- Bulan sabit pixel -->
+            <rect x="108" y="52" width="14" height="14" fill="#FFD166"/>
+            <rect x="104" y="54" width="8" height="10" fill="#1D2B53"/>
+            <!-- Bintang berkelip -->
+            <rect class="twinkle-1" x="50" y="58" width="6" height="6" fill="#FFF3B0"/>
+            <rect class="twinkle-2" x="78" y="74" width="5" height="5" fill="#B8F2E6"/>
+            <rect class="twinkle-3" x="56" y="106" width="6" height="6" fill="#FFD166"/>
+            <rect class="twinkle-1" x="112" y="96" width="5" height="5" fill="#FFFFFF"/>
+            <!-- Bingkai tingkap -->
+            <rect x="83" y="40" width="6" height="100" fill="#582F0E"/>
+            <rect x="34" y="87" width="104" height="6" fill="#582F0E"/>
+            <rect x="24" y="142" width="124" height="10" fill="#7F4F24" stroke="#231F20" stroke-width="3"/>
+          </g>
+
+          <!-- 3. PAPAN PENYIASATAN DENGAN GAMBAR & TALI MERAH (TENGAH DINDING) -->
+          <g id="investigation-board">
+            <!-- Bingkai kayu papan -->
+            <rect x="172" y="28" width="256" height="156" fill="#582F0E" stroke="#231F20" stroke-width="4"/>
+            <rect x="182" y="38" width="236" height="136" fill="url(#corkPattern)" stroke="#231F20" stroke-width="3"/>
+            <!-- Tajuk kecil papan -->
+            <rect x="242" y="32" width="116" height="16" fill="#FFD166" stroke="#231F20" stroke-width="2"/>
+            <text x="300" y="44" text-anchor="middle" font-size="10" font-weight="900" fill="#231F20">KES BANDAR CERIA</text>
+
+            <!-- Nota & Gambar Bukti pada Papan -->
+            <!-- Foto 1: Botol -->
+            <rect x="196" y="56" width="44" height="48" fill="#FFFFFF" stroke="#231F20" stroke-width="2"/>
+            <rect x="204" y="62" width="28" height="28" fill="#A2D2FF"/>
+            <rect x="214" y="66" width="8" height="20" fill="#FFFFFF"/>
+            <circle cx="218" cy="56" r="4" fill="#EF476F" stroke="#231F20" stroke-width="1.5"/>
+
+            <!-- Foto 2: Buah -->
+            <rect x="352" y="54" width="46" height="48" fill="#FFFFFF" stroke="#231F20" stroke-width="2"/>
+            <rect x="360" y="60" width="30" height="28" fill="#B8F2E6"/>
+            <circle cx="371" cy="75" r="7" fill="#EF476F"/>
+            <polygon points="376,82 387,70 387,82" fill="#06D6A0"/>
+            <circle cx="375" cy="54" r="4" fill="#EF476F" stroke="#231F20" stroke-width="1.5"/>
+
+            <!-- Nota Kuning Tengah -->
+            <rect x="274" y="76" width="52" height="44" fill="#FFD166" stroke="#231F20" stroke-width="2"/>
+            <line x1="280" y1="88" x2="318" y2="88" stroke="#231F20" stroke-width="2"/>
+            <line x1="280" y1="96" x2="312" y2="96" stroke="#231F20" stroke-width="2"/>
+            <line x1="280" y1="104" x2="320" y2="104" stroke="#231F20" stroke-width="2"/>
+            <circle cx="300" cy="76" r="4" fill="#EF476F" stroke="#231F20" stroke-width="1.5"/>
+
+            <!-- Foto 3: Bola -->
+            <rect x="204" y="118" width="44" height="44" fill="#FFFFFF" stroke="#231F20" stroke-width="2"/>
+            <rect x="210" y="123" width="32" height="26" fill="#CDB4DB"/>
+            <circle cx="226" cy="136" r="8" fill="#FFFFFF" stroke="#231F20" stroke-width="2"/>
+            <circle cx="226" cy="118" r="4" fill="#EF476F" stroke="#231F20" stroke-width="1.5"/>
+
+            <!-- Foto 4: Burger -->
+            <rect x="348" y="116" width="46" height="46" fill="#FFFFFF" stroke="#231F20" stroke-width="2"/>
+            <rect x="354" y="122" width="34" height="26" fill="#FFE5D9"/>
+            <rect x="362" y="130" width="18" height="12" fill="#E09F3E"/>
+            <circle cx="371" cy="116" r="4" fill="#EF476F" stroke="#231F20" stroke-width="1.5"/>
+
+            <!-- Tali Merah Menghubungkan Petunjuk -->
+            <polyline points="218,56 300,76 375,54" fill="none" stroke="#EF476F" stroke-width="2.5"/>
+            <polyline points="226,118 300,76 371,116" fill="none" stroke="#EF476F" stroke-width="2.5"/>
+            <line x1="218" y1="56" x2="226" y2="118" stroke="#EF476F" stroke-width="2" stroke-dasharray="4,3"/>
+          </g>
+
+          <!-- 4. PETA BANDAR CERIA (KANAN TENGAH DINDING) -->
+          <g id="bandar-ceria-map">
+            <rect x="448" y="34" width="166" height="132" fill="#FFF9EB" stroke="#231F20" stroke-width="4"/>
+            <rect x="456" y="42" width="150" height="116" fill="#B8F2E6" stroke="#231F20" stroke-width="2"/>
+            <!-- Sungai & Jalan Bandar Ceria -->
+            <path d="M 456 96 Q 510 82 545 110 T 606 102" fill="none" stroke="#5FA8E8" stroke-width="12"/>
+            <path d="M 495 42 L 495 158 M 456 128 L 606 128" stroke="#FFD166" stroke-width="6"/>
+            <!-- Bangunan Pixel: Sekolah, Padang, Taman -->
+            <rect x="466" y="54" width="22" height="18" fill="#EF476F" stroke="#231F20" stroke-width="2"/>
+            <rect x="520" y="52" width="32" height="22" fill="#06D6A0" stroke="#231F20" stroke-width="2"/>
+            <rect x="564" y="114" width="28" height="22" fill="#CDB4DB" stroke="#231F20" stroke-width="2"/>
+            <!-- Pin Lokasi Merah -->
+            <circle cx="477" cy="52" r="4" fill="#FFD166" stroke="#231F20" stroke-width="1.5"/>
+            <circle cx="536" cy="62" r="4" fill="#EF476F" stroke="#231F20" stroke-width="1.5"/>
+            <rect x="468" y="140" width="126" height="15" fill="#231F20"/>
+            <text x="531" y="151" text-anchor="middle" font-size="9" font-weight="900" fill="#FFD166">PETA BANDAR CERIA</text>
+          </g>
+
+          <!-- 5. RAK BUKU BERWARNA-WARNI (KANAN BILIK) -->
+          <g id="bookshelf">
+            <rect x="636" y="28" width="142" height="282" fill="#6F4518" stroke="#231F20" stroke-width="4"/>
+            <rect x="646" y="38" width="122" height="262" fill="#432818"/>
+            <!-- Para-para rak -->
+            <rect x="646" y="102" width="122" height="8" fill="#8B5A2B" stroke="#231F20" stroke-width="2"/>
+            <rect x="646" y="174" width="122" height="8" fill="#8B5A2B" stroke="#231F20" stroke-width="2"/>
+            <rect x="646" y="246" width="122" height="8" fill="#8B5A2B" stroke="#231F20" stroke-width="2"/>
+
+            <!-- Tingkat 1 Buku -->
+            <rect x="652" y="54" width="14" height="48" fill="#EF476F" stroke="#231F20" stroke-width="2"/>
+            <rect x="668" y="48" width="16" height="54" fill="#FFD166" stroke="#231F20" stroke-width="2"/>
+            <rect x="686" y="58" width="14" height="44" fill="#A2D2FF" stroke="#231F20" stroke-width="2"/>
+            <rect x="702" y="50" width="16" height="52" fill="#06D6A0" stroke="#231F20" stroke-width="2"/>
+            <rect x="724" y="60" width="14" height="42" fill="#CDB4DB" stroke="#231F20" stroke-width="2" transform="rotate(-8 724 60)"/>
+
+            <!-- Tingkat 2 Buku & Trofi -->
+            <rect x="654" y="124" width="16" height="50" fill="#A2D2FF" stroke="#231F20" stroke-width="2"/>
+            <rect x="672" y="120" width="14" height="54" fill="#CDB4DB" stroke="#231F20" stroke-width="2"/>
+            <rect x="688" y="128" width="18" height="46" fill="#FFD166" stroke="#231F20" stroke-width="2"/>
+            <!-- Trofi mini -->
+            <rect x="730" y="144" width="18" height="16" fill="#FFD166" stroke="#231F20" stroke-width="2"/>
+            <rect x="736" y="160" width="6" height="8" fill="#FFD166" stroke="#231F20" stroke-width="2"/>
+            <rect x="728" y="168" width="22" height="6" fill="#231F20"/>
+
+            <!-- Tingkat 3 Fail Detektif -->
+            <rect x="652" y="196" width="24" height="50" fill="#B8F2E6" stroke="#231F20" stroke-width="2"/>
+            <rect x="678" y="196" width="24" height="50" fill="#FFD166" stroke="#231F20" stroke-width="2"/>
+            <rect x="704" y="196" width="24" height="50" fill="#EF476F" stroke="#231F20" stroke-width="2"/>
+            <circle cx="664" cy="212" r="4" fill="#231F20"/>
+            <circle cx="690" cy="212" r="4" fill="#231F20"/>
+            <circle cx="716" cy="212" r="4" fill="#231F20"/>
+          </g>
+
+          <!-- 6. MEJA KAYU DETEKTIF BESAR (HADAPAN) -->
+          <g id="detective-desk">
+            <!-- Kaki meja -->
+            <rect x="72" y="305" width="32" height="135" fill="#582F0E" stroke="#231F20" stroke-width="4"/>
+            <rect x="636" y="305" width="32" height="135" fill="#582F0E" stroke="#231F20" stroke-width="4"/>
+            <!-- Panel hadapan meja -->
+            <rect x="104" y="310" width="532" height="96" fill="#7F4F24" stroke="#231F20" stroke-width="4"/>
+            <!-- Laci meja -->
+            <rect x="122" y="324" width="136" height="66" fill="#9C6644" stroke="#231F20" stroke-width="3"/>
+            <rect x="176" y="352" width="28" height="8" fill="#FFD166" stroke="#231F20" stroke-width="2"/>
+            <rect x="482" y="324" width="136" height="66" fill="#9C6644" stroke="#231F20" stroke-width="3"/>
+            <rect x="536" y="352" width="28" height="8" fill="#FFD166" stroke="#231F20" stroke-width="2"/>
+            <!-- Permukaan atas meja kayu -->
+            <polygon points="48,255 692,255 716,308 24,308" fill="url(#woodPattern)" stroke="#231F20" stroke-width="4"/>
+            <rect x="24" y="302" width="692" height="12" fill="#8C583A" stroke="#231F20" stroke-width="3"/>
+          </g>
+
+          <!-- 7. LAMPU MEJA DENGAN CAHAYA LEMBUT (KIRI ATAS MEJA) -->
+          <g id="desk-lamp">
+            <!-- Tapak & batang lampu -->
+            <rect x="64" y="256" width="36" height="10" fill="#231F20"/>
+            <rect x="78" y="210" width="8" height="46" fill="#FFD166" stroke="#231F20" stroke-width="2"/>
+            <rect x="78" y="204" width="28" height="8" fill="#FFD166" stroke="#231F20" stroke-width="2"/>
+            <!-- Tudung lampu -->
+            <polygon points="94,196 124,196 134,218 84,218" fill="#06D6A0" stroke="#231F20" stroke-width="3"/>
+            <!-- Pancaran cahaya lembut -->
+            <polygon class="lamp-cone" points="86,218 132,218 190,300 42,300" fill="url(#lampLightGrad)"/>
+          </g>
+
+          <!-- 8. KOMPUTER KECIL DETEKTIF (KIRI TENGAH MEJA) -->
+          <g id="mini-computer">
+            <!-- Tapak monitor -->
+            <rect x="176" y="262" width="44" height="8" fill="#4A5568" stroke="#231F20" stroke-width="2"/>
+            <rect x="192" y="250" width="12" height="12" fill="#718096" stroke="#231F20" stroke-width="2"/>
+            <!-- Monitor pixel -->
+            <rect x="154" y="192" width="88" height="60" rx="4" fill="#CBD5E1" stroke="#231F20" stroke-width="3"/>
+            <rect x="162" y="200" width="72" height="42" fill="#1E293B" stroke="#231F20" stroke-width="2"/>
+            <!-- Paparan skrin komputer -->
+            <rect x="168" y="206" width="28" height="4" fill="#06D6A0"/>
+            <rect x="168" y="214" width="46" height="4" fill="#A2D2FF"/>
+            <rect x="168" y="222" width="38" height="4" fill="#FFD166"/>
+            <rect x="168" y="230" width="20" height="4" fill="#CDB4DB"/>
+            <!-- Papan kekunci -->
+            <polygon points="152,272 244,272 250,284 146,284" fill="#E2E8F0" stroke="#231F20" stroke-width="2"/>
+          </g>
+
+          <!-- 9. KANTA PEMBESAR & BUKU NOTA (TENGAH HADAPAN MEJA) -->
+          <g id="magnifying-glass">
+            <!-- Buku nota detektif -->
+            <rect x="334" y="274" width="54" height="22" fill="#FFD166" stroke="#231F20" stroke-width="2.5"/>
+            <line x1="361" y1="274" x2="361" y2="296" stroke="#231F20" stroke-width="2"/>
+            <!-- Kanta pembesar di atas nota -->
+            <rect x="380" y="280" width="22" height="6" rx="2" fill="#582F0E" stroke="#231F20" stroke-width="2" transform="rotate(28 380 280)"/>
+            <circle cx="372" cy="276" r="13" fill="#A2D2FF" fill-opacity="0.7" stroke="#231F20" stroke-width="3"/>
+            <circle cx="368" cy="272" r="3" fill="#FFFFFF"/>
+          </g>
+
+          <!-- ================================================================
+               10. EMPAT OBJEK UTAMA INTERAKTIF (BOLEH DIKLIK & TABINDEX)
+               ================================================================ -->
+
+          <!-- OBJEK 1: BOTOL AIR KOSONG (DI ATAS MEJA KIRI-TENGAH) -->
+          <g id="hotspot-1" class="clue-hotspot" tabindex="0" role="button" aria-label="Petunjuk 1: Botol Air Kosong. Tekan Enter untuk menyiasat." data-clue-id="1">
+            <!-- Kawasan hit lutsinar supaya mudah diklik -->
+            <rect x="264" y="196" width="58" height="86" fill="transparent"/>
+            <!-- Penutup botol biru -->
+            <rect x="285" y="202" width="16" height="8" fill="#5FA8E8" stroke="#231F20" stroke-width="2.5"/>
+            <rect x="287" y="210" width="12" height="6" fill="#A2D2FF" stroke="#231F20" stroke-width="2"/>
+            <!-- Badan botol air kosong -->
+            <rect x="277" y="216" width="32" height="58" rx="4" fill="#E0F4FF" stroke="#231F20" stroke-width="3"/>
+            <!-- Paras air jernih -->
+            <rect x="280" y="232" width="26" height="39" fill="#A2D2FF"/>
+            <!-- Label botol -->
+            <rect x="280" y="238" width="26" height="14" fill="#FFFFFF" stroke="#231F20" stroke-width="1.5"/>
+            <rect x="285" y="243" width="16" height="4" fill="#06D6A0"/>
+            <!-- Kilauan -->
+            <rect x="283" y="220" width="4" height="12" fill="#FFFFFF"/>
+
+            <!-- Tag Nombor & Status -->
+            <g class="clue-label-tag">
+              <rect x="263" y="176" width="60" height="20" rx="6" fill="#FFD166" stroke="#231F20" stroke-width="2.5"/>
+              <text id="badge-svg-1" x="293" y="190" text-anchor="middle" font-size="11" font-weight="900" fill="#231F20">1 🔍</text>
+            </g>
+          </g>
+
+          <!-- OBJEK 2: BAKUL BUAH-BUAHAN (DI ATAS MEJA KANAN-TENGAH) -->
+          <g id="hotspot-2" class="clue-hotspot" tabindex="0" role="button" aria-label="Petunjuk 2: Bakul Buah-buahan. Tekan Enter untuk menyiasat." data-clue-id="2">
+            <rect x="424" y="198" width="84" height="82" fill="transparent"/>
+            <!-- Buah-buahan di dalam bakul -->
+            <!-- Epal merah -->
+            <circle cx="448" cy="236" r="13" fill="#EF476F" stroke="#231F20" stroke-width="2.5"/>
+            <rect x="447" y="220" width="3" height="5" fill="#582F0E"/>
+            <ellipse cx="453" cy="222" rx="5" ry="2.5" fill="#06D6A0"/>
+            <!-- Potongan tembikai -->
+            <path d="M 462 242 A 18 18 0 0 0 498 242 Z" fill="#06D6A0" stroke="#231F20" stroke-width="2.5"/>
+            <path d="M 466 242 A 14 14 0 0 0 494 242 Z" fill="#EF476F"/>
+            <circle cx="476" cy="246" r="1.5" fill="#231F20"/>
+            <circle cx="484" cy="246" r="1.5" fill="#231F20"/>
+            <!-- Oren -->
+            <circle cx="468" cy="228" r="11" fill="#FF9F1C" stroke="#231F20" stroke-width="2.5"/>
+
+            <!-- Bakul rotan pixel -->
+            <polygon points="432,242 500,242 492,272 440,272" fill="#C68B59" stroke="#231F20" stroke-width="3"/>
+            <line x1="436" y1="252" x2="496" y2="252" stroke="#582F0E" stroke-width="2.5"/>
+            <line x1="438" y1="262" x2="494" y2="262" stroke="#582F0E" stroke-width="2.5"/>
+            <line x1="454" y1="242" x2="456" y2="272" stroke="#582F0E" stroke-width="2"/>
+            <line x1="476" y1="242" x2="474" y2="272" stroke="#582F0E" stroke-width="2"/>
+
+            <!-- Tag Nombor & Status -->
+            <g class="clue-label-tag">
+              <rect x="436" y="186" width="60" height="20" rx="6" fill="#FFD166" stroke="#231F20" stroke-width="2.5"/>
+              <text id="badge-svg-2" x="466" y="200" text-anchor="middle" font-size="11" font-weight="900" fill="#231F20">2 🔍</text>
+            </g>
+          </g>
+
+          <!-- OBJEK 3: BOLA SEPAK (DI LANTAI HADAPAN TENGAH) -->
+          <g id="hotspot-3" class="clue-hotspot" tabindex="0" role="button" aria-label="Petunjuk 3: Bola Sepak. Tekan Enter untuk menyiasat." data-clue-id="3">
+            <rect x="330" y="334" width="84" height="86" fill="transparent"/>
+            <!-- Bayang bola -->
+            <ellipse cx="372" cy="408" rx="28" ry="8" fill="#1F1926" opacity="0.7"/>
+            <!-- Bola sepak pixel -->
+            <circle cx="372" cy="380" r="28" fill="#FFFFFF" stroke="#231F20" stroke-width="3.5"/>
+            <!-- Corak pentagon hitam -->
+            <polygon points="372,370 381,377 378,388 366,388 363,377" fill="#231F20"/>
+            <polygon points="372,353 379,359 365,359" fill="#231F20"/>
+            <polygon points="347,374 354,370 353,382" fill="#231F20"/>
+            <polygon points="397,374 390,370 391,382" fill="#231F20"/>
+            <polygon points="358,402 365,396 369,405" fill="#231F20"/>
+            <polygon points="386,402 379,396 375,405" fill="#231F20"/>
+
+            <!-- Tag Nombor & Status -->
+            <g class="clue-label-tag">
+              <rect x="342" y="326" width="60" height="20" rx="6" fill="#FFD166" stroke="#231F20" stroke-width="2.5"/>
+              <text id="badge-svg-3" x="372" y="340" text-anchor="middle" font-size="11" font-weight="900" fill="#231F20">3 🔍</text>
+            </g>
+          </g>
+
+          <!-- OBJEK 4: MAKANAN SEGERA (BURGER & MINUMAN MANIS DI ATAS MEJA KANAN) -->
+          <g id="hotspot-4" class="clue-hotspot" tabindex="0" role="button" aria-label="Petunjuk 4: Makanan Segera. Tekan Enter untuk menyiasat." data-clue-id="4">
+            <rect x="536" y="196" width="94" height="84" fill="transparent"/>
+            <!-- Cawan minuman manis berstraw -->
+            <rect x="602" y="212" width="4" height="16" fill="#EF476F" stroke="#231F20" stroke-width="1.5" transform="rotate(14 602 212)"/>
+            <polygon points="590,226 616,226 612,268 594,268" fill="#A2D2FF" stroke="#231F20" stroke-width="2.5"/>
+            <rect x="588" y="222" width="30" height="6" fill="#FFFFFF" stroke="#231F20" stroke-width="2"/>
+            <rect x="593" y="242" width="20" height="10" fill="#EF476F"/>
+
+            <!-- Burger pixel -->
+            <!-- Roti atas -->
+            <path d="M 544 244 Q 566 226 588 244 Z" fill="#F4A261" stroke="#231F20" stroke-width="2.5"/>
+            <rect x="558" y="236" width="3" height="2" fill="#FFF9EB"/>
+            <rect x="570" y="235" width="3" height="2" fill="#FFF9EB"/>
+            <!-- Salad hijau -->
+            <rect x="542" y="244" width="48" height="5" fill="#06D6A0" stroke="#231F20" stroke-width="2"/>
+            <!-- Keju kuning -->
+            <rect x="544" y="249" width="44" height="4" fill="#FFD166" stroke="#231F20" stroke-width="1.5"/>
+            <!-- Daging burger -->
+            <rect x="543" y="253" width="46" height="8" rx="2" fill="#6F4518" stroke="#231F20" stroke-width="2"/>
+            <!-- Roti bawah -->
+            <rect x="545" y="261" width="42" height="7" rx="2" fill="#F4A261" stroke="#231F20" stroke-width="2.5"/>
+
+            <!-- Tag Nombor & Status -->
+            <g class="clue-label-tag">
+              <rect x="553" y="186" width="60" height="20" rx="6" fill="#FFD166" stroke="#231F20" stroke-width="2.5"/>
+              <text id="badge-svg-4" x="583" y="200" text-anchor="middle" font-size="11" font-weight="900" fill="#231F20">4 🔍</text>
+            </g>
+          </g>
+        </svg>
+      </div>
+
+      <!-- BAR BUTANG PANTAS 4 OBJEK (MESRA SENTUHAN MOBILE/TABLET) -->
+      <div class="quick-objects-bar" aria-label="Senarai Empat Objek Petunjuk">
+        <button type="button" class="obj-card-btn" id="card-btn-1" data-clue-id="1">
+          <span>🧴 Botol Air Kosong</span>
+          <span class="status-chip" id="chip-1">🔍 Belum Selesai</span>
+        </button>
+        <button type="button" class="obj-card-btn" id="card-btn-2" data-clue-id="2">
+          <span>🍎 Bakul Buah-buahan</span>
+          <span class="status-chip" id="chip-2">🔍 Belum Selesai</span>
+        </button>
+        <button type="button" class="obj-card-btn" id="card-btn-3" data-clue-id="3">
+          <span>⚽ Bola Sepak</span>
+          <span class="status-chip" id="chip-3">🔍 Belum Selesai</span>
+        </button>
+        <button type="button" class="obj-card-btn" id="card-btn-4" data-clue-id="4">
+          <span>🍔 Makanan Segera</span>
+          <span class="status-chip" id="chip-4">🔍 Belum Selesai</span>
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <!-- ========================================================================
+       MODAL 1: TETINGKAP PETUNJUK AUDIO & SOALAN PENYIASATAN
+       ======================================================================== -->
+  <div id="clue-modal" class="overlay-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="clue-modal-title">
+    <div class="pixel-modal">
+      <div class="modal-header">
+        <h2 id="clue-modal-title" class="modal-title">🔎 PETUNJUK DETEKTIF</h2>
+        <button type="button" class="btn-pixel btn-danger" onclick="closeClueModal()" aria-label="Tutup Tetingkap Petunjuk">✖</button>
+      </div>
+      <div class="modal-body">
+        <!-- Panel Ikon Objek & Kawalan Audio -->
+        <div class="clue-top-banner">
+          <div id="clue-icon-preview" class="clue-icon-frame" aria-hidden="true"></div>
+          <div class="audio-control-panel">
+            <div class="audio-btn-row">
+              <button type="button" id="btn-play-clue" class="btn-pixel btn-gold">
+                🎧 DENGAR PETUNJUK
+              </button>
+              <button type="button" id="btn-replay-clue" class="btn-pixel btn-blue">
+                🔁 DENGAR SEMULA
+              </button>
+              <button type="button" id="btn-toggle-transcript" class="btn-pixel btn-mint">
+                📄 Buka Teks Sokongan
+              </button>
+            </div>
+            <div id="audio-status-msg" class="audio-status-msg" aria-live="polite">
+              🎧 Tekan butang <strong>"DENGAR PETUNJUK"</strong> untuk mendengar rakaman petunjuk.
+            </div>
+
+            <!-- Pilihan Pemain MP3 Sebenar / Sandaran Guru -->
+            <div id="mp3-fallback-box" class="mp3-fallback-box" style="display: none;">
+              <div><strong>🎵 Pemain Audio Alternatif / MP3 Guru:</strong></div>
+              <audio id="clue-mp3-player" controls preload="none"></audio>
+              <div>
+                <button type="button" id="btn-unlock-fallback" class="btn-pixel btn-mint" style="font-size: 0.78rem; padding: 5px 10px;">
+                  ✅ Saya Sudah Mendengar / Teruskan Soalan
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Kotak Transkrip Sokongan (Tersembunyi secara lalai) -->
+        <div id="transcript-box" class="transcript-box" style="display: none;">
+          <div style="font-size: 0.82rem; color: #78350F; margin-bottom: 4px;">📄 TEKS SOKONGAN PETUNJUK:</div>
+          <p id="transcript-text"></p>
+        </div>
+
+        <!-- Kotak Sokongan Khusus Tahap Bimbingan -->
+        <div id="bimbingan-support-box" class="support-box" style="display: none;">
+          <div><strong>🟢 SOKONGAN TAHAP BIMBINGAN:</strong></div>
+          <div id="keyword-chips-container" class="keyword-chips"></div>
+          <p id="bimbingan-extra-tip" style="margin-top: 6px; font-size: 0.88rem;"></p>
+        </div>
+
+        <!-- Kawasan Soalan Tersurat, Tersirat & Lanjutan -->
+        <div id="question-area"></div>
+      </div>
+      <div class="modal-footer">
+        <span id="clue-step-indicator" style="font-weight: 800; font-size: 0.85rem;">Status: Menunggu petunjuk didengar</span>
+        <button type="button" class="btn-pixel" onclick="closeClueModal()">
+          🔙 Kembali ke Bilik Siasatan
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL 2: BUKU PANDUAN DETEKTIF (PENERANGAN TERSURAT & TERSIRAT)
+       ======================================================================== -->
+  <div id="guide-modal" class="overlay-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="guide-title">
+    <div class="pixel-modal">
+      <div class="modal-header">
+        <h2 id="guide-title" class="modal-title">📖 BUKU PANDUAN DETEKTIF</h2>
+        <button type="button" class="btn-pixel btn-danger" onclick="closeModal('guide-modal')" aria-label="Tutup Buku Panduan">✖</button>
+      </div>
+      <div class="modal-body">
+        <div class="guide-box">
+          <h3>🔍 MAKLUMAT TERSURAT</h3>
+          <p>Maklumat yang dinyatakan secara jelas dalam bahan yang didengar atau dibaca.</p>
+        </div>
+
+        <div class="guide-box">
+          <h3>🧠 MAKLUMAT TERSIRAT</h3>
+          <p>Maklumat yang tidak dinyatakan secara langsung tetapi boleh difahami melalui petunjuk dan penaakulan (membuat inferens).</p>
+        </div>
+
+        <div class="example-card">
+          <div style="font-weight: 900; margin-bottom: 6px;">💡 CONTOH SIASATAN DETEKTIF:</div>
+          <p style="font-weight: 800; color: #1E3A5F; margin-bottom: 6px;">"Aina membawa air kosong ke sekolah."</p>
+          <p><strong>🔍 Tersurat:</strong> Aina membawa air kosong.</p>
+          <p><strong>🧠 Tersirat:</strong> Aina mungkin memilih air kosong untuk memastikan badannya mendapat air yang mencukupi.</p>
+        </div>
+      </div>
+      <div class="modal-footer" style="justify-content: flex-end;">
+        <button type="button" class="btn-pixel btn-gold" onclick="closeModal('guide-modal')">
+          🔎 KEMBALI MENYIASAT
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL 3: BANTUAN DETEKTIF (PEMBELAJARAN TERBEZA 3 TAHAP)
+       ======================================================================== -->
+  <div id="diff-modal" class="overlay-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="diff-title">
+    <div class="pixel-modal">
+      <div class="modal-header">
+        <h2 id="diff-title" class="modal-title">🧭 BANTUAN DETEKTIF (TAHAP SOKONGAN)</h2>
+        <button type="button" class="btn-pixel btn-danger" onclick="closeModal('diff-modal')" aria-label="Tutup Bantuan Detektif">✖</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-weight: 700;">Pilih tahap sokongan pembelajaran yang paling sesuai untuk kamu. Semua detektif akan mencapai objektif pembelajaran yang sama!</p>
+
+        <div id="diff-card-bimbingan" class="diff-option-card" role="button" tabindex="0" onclick="setDifficulty('bimbingan')">
+          <strong>🟢 BIMBINGAN</strong>
+          <span>• Audio boleh diulang tanpa had, memaparkan kata kunci penting, transkrip sokongan serta petunjuk tambahan.</span>
+        </div>
+
+        <div id="diff-card-sederhana" class="diff-option-card active" role="button" tabindex="0" onclick="setDifficulty('sederhana')">
+          <strong>🔵 SEDERHANA (Lalai)</strong>
+          <span>• Audio dan pilihan jawapan standard tanpa petunjuk tambahan pada percubaan pertama.</span>
+        </div>
+
+        <div id="diff-card-lanjutan" class="diff-option-card" role="button" tabindex="0" onclick="setDifficulty('lanjutan')">
+          <strong>🟣 LANJUTAN</strong>
+          <span>• Menyediakan cabaran tambahan yang meminta detektif menjelaskan alasan bagi inferens yang dibuat.</span>
+        </div>
+      </div>
+      <div class="modal-footer" style="justify-content: flex-end;">
+        <button type="button" class="btn-pixel btn-mint" onclick="closeModal('diff-modal')">
+          ✅ SAHKAN & TERUSKAN
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL 4: CABARAN AKHIR, LENCANA PENGHARGAAN & STUDIO RAKAMAN SUARA
+       ======================================================================== -->
+  <div id="final-modal" class="overlay-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="final-title">
+    <div class="pixel-modal">
+      <div class="modal-header">
+        <h2 id="final-title" class="modal-title">🏆 TAHNIAH, DETEKTIF!</h2>
+        <button type="button" class="btn-pixel btn-danger" onclick="closeModal('final-modal')" aria-label="Tutup Paparan Tahniah">✖</button>
+      </div>
+      <div class="modal-body">
+        <div class="badge-showcase">
+          <p style="font-size: 1rem; font-weight: 700; color: #FFF9EB; margin-bottom: 12px;">
+            "Kamu berjaya menyelesaikan penyiasatan dan mengenal pasti maklumat tersurat serta tersirat!"
+          </p>
+
+          <!-- Lencana Digital Pixel-Art -->
+          <svg width="96" height="96" viewBox="0 0 22 22" style="margin: 0 auto 8px; display: block; shape-rendering: crispEdges;" aria-hidden="true">
+            <rect x="6" y="1" width="10" height="2" fill="#FFD166"/>
+            <rect x="4" y="3" width="14" height="2" fill="#FFD166"/>
+            <rect x="3" y="5" width="16" height="10" fill="#E0A82E"/>
+            <rect x="5" y="5" width="12" height="9" fill="#FFF3B0"/>
+            <!-- Bintang di tengah lencana -->
+            <rect x="10" y="6" width="2" height="7" fill="#EF476F"/>
+            <rect x="7" y="9" width="8" height="2" fill="#EF476F"/>
+            <!-- Reben bawah -->
+            <rect x="6" y="15" width="4" height="6" fill="#A2D2FF"/>
+            <rect x="12" y="15" width="4" height="6" fill="#06D6A0"/>
+          </svg>
+
+          <div style="display: inline-block; background: var(--gold); color: var(--ink); border: 3px solid var(--ink); border-radius: 10px; padding: 6px 16px; font-weight: 900; font-size: 1.02rem;">
+            🏅 DETEKTIF MAKLUMAT HEBAT
+          </div>
+        </div>
+
+        <!-- Cabaran Lisan & Studio Rakaman Suara -->
+        <div class="oral-challenge-box">
+          <h3 style="margin-bottom: 6px;">🎤 CABARAN LISAN DETEKTIF</h3>
+          <p style="font-weight: 700; margin-bottom: 8px;">
+            "Pilih satu petunjuk yang telah kamu dengar. Jelaskan satu maklumat tersurat dan satu maklumat tersirat daripada petunjuk tersebut menggunakan ayat kamu sendiri."
+          </p>
+
+          <div style="font-size: 0.86rem; font-weight: 800; color: #1E3A5F;">Gunakan rangka ayat bantuan di bawah semasa merakam suara kamu:</div>
+
+          <div class="sentence-frame">
+            1. "Maklumat tersurat yang saya dengar ialah..."
+          </div>
+          <div class="sentence-frame">
+            2. "Maklumat tersirat yang saya fahami ialah..."
+          </div>
+
+          <!-- STUDIO RAKAMAN SUARA INTERAKTIF (MediaRecorder API) -->
+          <div class="voice-studio-box" aria-label="Studio Rakaman Suara Detektif">
+            <div class="studio-header-row">
+              <strong>🎙️ STUDIO RAKAMAN SUARA (<span id="studio-student-label">Detektif</span>)</strong>
+              <span class="rec-timer-pill" aria-live="polite">
+                <span id="rec-indicator-dot" class="rec-dot"></span>
+                <span id="rec-timer-text">00:00</span>
+              </span>
+            </div>
+
+            <div class="studio-btn-grid">
+              <button type="button" id="btn-rec-start" class="btn-pixel btn-danger">
+                🔴 MULA RAKAMAN
+              </button>
+              <button type="button" id="btn-rec-stop" class="btn-pixel btn-gold" disabled>
+                ⏹️ HENTIKAN RAKAMAN
+              </button>
+              <button type="button" id="btn-rec-play" class="btn-pixel btn-blue" disabled>
+                ▶️ DENGAR SEMULA
+              </button>
+              <button type="button" id="btn-rec-reset" class="btn-pixel" disabled>
+                🔄 RAKAM SEMULA
+              </button>
+              <button type="button" id="btn-rec-submit" class="btn-pixel btn-success" disabled>
+                📤 HANTAR KEPADA CIKGU
+              </button>
+            </div>
+
+            <!-- Panel Pemain Audio Semakan Sebelum Hantar -->
+            <div id="playback-panel" class="playback-panel">
+              <div style="font-size: 0.84rem; font-weight: 800;">🎧 Semak Rakaman Kamu Sebelum Menghantar:</div>
+              <audio id="student-audio-playback" controls></audio>
+              <div id="generated-filename-tag" class="file-meta-tag">📁 Nama Fail: -</div>
+              <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
+                <button type="button" id="btn-download-local" class="btn-pixel btn-mint" style="font-size: 0.8rem;" disabled>
+                  💾 Simpan Salinan Fail Audio
+                </button>
+              </div>
+            </div>
+
+            <!-- Mesej Status Studio & Penghantaran -->
+            <div id="studio-status-banner" class="studio-status-banner" aria-live="polite">
+              Tekan butang <strong>"🔴 MULA RAKAMAN"</strong> dan benarkan akses mikrofon untuk merakam jawapan lisan kamu.
+            </div>
+
+            <!-- Nota Keserasian Mikrofon Google Sites (Tanpa Membuka Tab Baharu yang Mengosongkan Sesi) -->
+            <div class="iframe-mic-helper">
+              <span>💡 <strong>Tip Mikrofon:</strong> Pastikan ikon mikrofon (🎙️) pada bar alamat pelayar dibenarkan (<em>Allow</em>) sebelum menekan <strong>MULA RAKAMAN</strong>.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer" style="justify-content: space-between;">
+        <button type="button" class="btn-pixel btn-blue" onclick="closeModal('final-modal')">
+          🔎 Lihat Bilik Siasatan
+        </button>
+        <button type="button" id="btn-reset-mission" class="btn-pixel btn-gold btn-lg">
+          🔄 ULANG MISI
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       SKRIP LOGIK PERMAINAN INTERAKTIF
+       ======================================================================== -->
+  <script>
+    /* ========================================================================
+       0. KONFIGURASI GOOGLE DRIVE & GOOGLE APPS SCRIPT BACKEND
+       ======================================================================== */
+    const GOOGLE_DRIVE_FOLDER_URL = "https://drive.google.com/drive/folders/1FzihPiB4rc5DM40LEefnfkr1_vDCWOTg";
+    const GOOGLE_DRIVE_FOLDER_ID = "1FzihPiB4rc5DM40LEefnfkr1_vDCWOTg";
+    // Guru boleh menampal URL Web App Google Apps Script di bawah apabila backend sedia:
+    const APPS_SCRIPT_WEB_APP_URL = "";
+    const MISSION_NAME = "Misi 2 Detektif Maklumat";
+    const SESSION_STORAGE_KEY = "misi2_detektif_student_v1";
+    const RECOVERY_KEY = "misi2_recovery_v2";
+    const MIC_RELOAD_KEY = "misi2_mic_attempt_v2";
+
+    /* ========================================================================
+       1. DATA 4 PETUNJUK, AUDIO, SOALAN TERSURAT & TERSIRAT
+       (Guru boleh memasukkan URL fail MP3 sebenar pada medan mp3Url jika mahu)
+       ======================================================================== */
+    const CLUES_DATA = {
+      1: {
+        id: 1,
+        title: "PETUNJUK 1 — BOTOL AIR KOSONG",
+        shortName: "Botol Air Kosong",
+        mp3Url: "", // Guru boleh masukkan pautan MP3 sebenar di sini, contoh: "audio/petunjuk1.mp3"
+        audioText: "Setiap hari, Aina membawa sebotol air kosong ke sekolah. Selepas bermain bola sepak, Aina minum air kosong untuk menggantikan air yang hilang daripada badannya.",
+        keywords: ["air kosong", "ke sekolah", "menggantikan air yang hilang"],
+        extraHint: "Petunjuk tambahan: Dengar dengan teliti jenis minuman yang dibawa oleh Aina setiap hari dan sebab badannya memerlukan air selepas bermain bola sepak.",
+        iconSvg: `
+          <svg width="54" height="54" viewBox="0 0 16 16" style="shape-rendering: crispEdges;">
+            <rect x="6" y="1" width="4" height="2" fill="#5FA8E8"/>
+            <rect x="5" y="4" width="6" height="11" fill="#E0F4FF" stroke="#231F20" stroke-width="1"/>
+            <rect x="6" y="7" width="4" height="7" fill="#A2D2FF"/>
+            <rect x="6" y="9" width="4" height="3" fill="#06D6A0"/>
+          </svg>`,
+        tersurat: {
+          question: "Apakah minuman yang dibawa oleh Aina ke sekolah?",
+          options: [
+            { key: "A", text: "Air kosong" },
+            { key: "B", text: "Minuman berkarbonat" },
+            { key: "C", text: "Air sirap" },
+            { key: "D", text: "Minuman coklat" }
+          ],
+          correct: "A"
+        },
+        tersirat: {
+          question: "Mengapakah Aina membawa air kosong ke sekolah?",
+          options: [
+            { key: "A", text: "Untuk menghias beg sekolah" },
+            { key: "B", text: "Untuk memastikan badannya mendapat air yang mencukupi" },
+            { key: "C", text: "Untuk diberikan kepada semua rakannya" },
+            { key: "D", text: "Untuk bermain dengan botol" }
+          ],
+          correct: "B"
+        }
+      },
+      2: {
+        id: 2,
+        title: "PETUNJUK 2 — BAKUL BUAH-BUAHAN",
+        shortName: "Bakul Buah-buahan",
+        mp3Url: "",
+        audioText: "Pada waktu rehat, Farah memilih sebiji epal dan sepotong tembikai sebagai makanan ringan. Dia gemar makan buah-buahan kerana buah-buahan mengandungi vitamin.",
+        keywords: ["epal", "tembikai", "makanan ringan", "mengandungi vitamin"],
+        extraHint: "Petunjuk tambahan: Perhatikan dua nama buah yang dimakan oleh Farah pada waktu rehat dan kebaikan vitamin kepada tubuh badan.",
+        iconSvg: `
+          <svg width="54" height="54" viewBox="0 0 16 16" style="shape-rendering: crispEdges;">
+            <circle cx="5" cy="7" r="3" fill="#EF476F"/>
+            <circle cx="10" cy="7" r="3" fill="#06D6A0"/>
+            <polygon points="2,9 14,9 12,14 4,14" fill="#C68B59" stroke="#231F20" stroke-width="1"/>
+          </svg>`,
+        tersurat: {
+          question: "Apakah buah yang dimakan oleh Farah?",
+          options: [
+            { key: "A", text: "Durian dan rambutan" },
+            { key: "B", text: "Pisang dan mangga" },
+            { key: "C", text: "Epal dan tembikai" },
+            { key: "D", text: "Oren dan anggur" }
+          ],
+          correct: "C"
+        },
+        tersirat: {
+          question: "Apakah yang dapat kita simpulkan tentang pilihan makanan Farah?",
+          options: [
+            { key: "A", text: "Farah tidak suka makan" },
+            { key: "B", text: "Farah memilih makanan yang menyumbang kepada kesihatannya" },
+            { key: "C", text: "Farah hanya makan pada waktu malam" },
+            { key: "D", text: "Farah tidak memerlukan makanan lain" }
+          ],
+          correct: "B"
+        }
+      },
+      3: {
+        id: 3,
+        title: "PETUNJUK 3 — BOLA SEPAK",
+        shortName: "Bola Sepak",
+        mp3Url: "",
+        audioText: "Setiap petang, Hakim bermain bola sepak bersama rakan-rakannya di padang. Dia juga melakukan aktiviti memanaskan badan sebelum bermain.",
+        keywords: ["bermain bola sepak", "setiap petang", "memanaskan badan"],
+        extraHint: "Petunjuk tambahan: Fokus pada permainan yang dilakukan oleh Hakim di padang setiap petang dan tujuan kita memanaskan badan sebelum bersukan.",
+        iconSvg: `
+          <svg width="54" height="54" viewBox="0 0 16 16" style="shape-rendering: crispEdges;">
+            <circle cx="8" cy="8" r="6" fill="#FFFFFF" stroke="#231F20" stroke-width="1.5"/>
+            <rect x="7" y="6" width="2" height="3" fill="#231F20"/>
+            <rect x="4" y="8" width="2" height="2" fill="#231F20"/>
+            <rect x="10" y="8" width="2" height="2" fill="#231F20"/>
+          </svg>`,
+        tersurat: {
+          question: "Apakah aktiviti yang dilakukan oleh Hakim setiap petang?",
+          options: [
+            { key: "A", text: "Membaca buku" },
+            { key: "B", text: "Bermain permainan video" },
+            { key: "C", text: "Bermain bola sepak" },
+            { key: "D", text: "Menonton televisyen" }
+          ],
+          correct: "C"
+        },
+        tersirat: {
+          question: "Mengapakah Hakim melakukan aktiviti memanaskan badan sebelum bermain?",
+          options: [
+            { key: "A", text: "Untuk menyediakan badan bagi melakukan aktiviti fizikal" },
+            { key: "B", text: "Untuk mengelakkan daripada bermain" },
+            { key: "C", text: "Untuk mendapatkan makanan" },
+            { key: "D", text: "Untuk berehat sepanjang petang" }
+          ],
+          correct: "A"
+        }
+      },
+      4: {
+        id: 4,
+        title: "PETUNJUK 4 — MAKANAN SEGERA",
+        shortName: "Makanan Segera",
+        mp3Url: "",
+        audioText: "Rafiq sering memilih burger dan minuman manis sebagai makanan selepas sekolah. Ibunya menasihatinya supaya mempelbagaikan makanan dan mengurangkan pengambilan minuman manis.",
+        keywords: ["burger", "minuman manis", "mempelbagaikan makanan", "mengurangkan minuman manis"],
+        extraHint: "Petunjuk tambahan: Dengar makanan yang sering dipilih oleh Rafiq selepas sekolah dan sebab ibunya menasihati Rafiq mempelbagaikan makanan.",
+        iconSvg: `
+          <svg width="54" height="54" viewBox="0 0 16 16" style="shape-rendering: crispEdges;">
+            <rect x="3" y="4" width="10" height="3" fill="#F4A261"/>
+            <rect x="2" y="7" width="12" height="2" fill="#06D6A0"/>
+            <rect x="3" y="9" width="10" height="2" fill="#6F4518"/>
+            <rect x="3" y="11" width="10" height="2" fill="#F4A261"/>
+          </svg>`,
+        tersurat: {
+          question: "Apakah makanan yang sering dipilih oleh Rafiq?",
+          options: [
+            { key: "A", text: "Bubur nasi" },
+            { key: "B", text: "Burger" },
+            { key: "C", text: "Sup sayur" },
+            { key: "D", text: "Ikan bakar" }
+          ],
+          correct: "B"
+        },
+        tersirat: {
+          question: "Mengapakah ibu Rafiq menasihatinya supaya mempelbagaikan makanan?",
+          options: [
+            { key: "A", text: "Supaya Rafiq tidak perlu makan lagi" },
+            { key: "B", text: "Supaya Rafiq boleh makan lebih banyak gula" },
+            { key: "C", text: "Supaya Rafiq mendapat pemakanan yang lebih seimbang" },
+            { key: "D", text: "Supaya Rafiq hanya makan burger" }
+          ],
+          correct: "C"
+        }
+      }
+    };
+
+    /* ========================================================================
+       2. KEADAAN SESI PERMAINAN (STATE MANAGEMENT)
+       ======================================================================== */
+    const state = {
+      student: {
+        name: "",
+        className: ""
+      },
+      difficulty: "sederhana", // 'bimbingan' | 'sederhana' | 'lanjutan'
+      animationsEnabled: true,
+      sfxEnabled: true,
+      activeClueId: null,
+      speechSupported: ("speechSynthesis" in window),
+      malayVoice: null,
+      cluesProgress: {
+        1: createInitialClueState(),
+        2: createInitialClueState(),
+        3: createInitialClueState(),
+        4: createInitialClueState()
+      },
+      recording: {
+        mediaRecorder: null,
+        stream: null,
+        chunks: [],
+        audioBlob: null,
+        audioUrl: null,
+        mimeType: "audio/webm",
+        fileExt: "webm",
+        generatedFilename: "",
+        isRecording: false,
+        secondsElapsed: 0,
+        timerInterval: null,
+        isSubmitting: false
+      }
+    };
+
+    function createInitialClueState() {
+      return {
+        audioListened: false,
+        transcriptVisible: false,
+        step: "tersurat", // 'tersurat' -> 'tersirat' -> 'lanjutan' -> 'completed'
+        attemptsTersurat: 0,
+        attemptsTersirat: 0,
+        wrongOptionsTersurat: [],
+        wrongOptionsTersirat: [],
+        feedbackType: null, // 'success' | 'error' | null
+        feedbackMsg: "",
+        showExtraHint: false,
+        lanjutanReason: "",
+        solved: false
+      };
+    }
+
+    /* ========================================================================
+       3. SINTESIS KESAN BUNYI LEMBUT (WEB AUDIO API TANPA FAIL LUARAN)
+       ======================================================================== */
+    let audioCtx = null;
+
+    function playSfx(type) {
+      if (!state.sfxEnabled) return;
+      try {
+        if (!audioCtx) {
+          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+          if (AudioContextClass) audioCtx = new AudioContextClass();
+        }
+        if (!audioCtx) return;
+        if (audioCtx.state === "suspended") audioCtx.resume();
+
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        if (type === "click") {
+          osc.type = "triangle";
+          osc.frequency.setValueAtTime(520, now);
+          osc.frequency.exponentialRampToValueAtTime(680, now + 0.07);
+          gain.gain.setValueAtTime(0.08, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+          osc.start(now);
+          osc.stop(now + 0.08);
+        } else if (type === "success") {
+          // Melodi kejayaan lembut 3 nada
+          const notes = [523.25, 659.25, 783.99];
+          notes.forEach((freq, idx) => {
+            const o = audioCtx.createOscillator();
+            const g = audioCtx.createGain();
+            o.type = "sine";
+            o.frequency.setValueAtTime(freq, now + idx * 0.1);
+            g.gain.setValueAtTime(0.1, now + idx * 0.1);
+            g.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.1 + 0.25);
+            o.connect(g);
+            g.connect(audioCtx.destination);
+            o.start(now + idx * 0.1);
+            o.stop(now + idx * 0.1 + 0.26);
+          });
+        } else if (type === "error") {
+          osc.type = "sine";
+          osc.frequency.setValueAtTime(310, now);
+          osc.frequency.linearRampToValueAtTime(240, now + 0.22);
+          gain.gain.setValueAtTime(0.08, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.24);
+          osc.start(now);
+          osc.stop(now + 0.24);
+        }
+      } catch (e) {
+        // Abaikan jika audio disekat oleh tetapan pelayar
+      }
+    }
+
+    /* ========================================================================
+       4. ANIMASI BINTANG KEJAYAAN
+       ======================================================================== */
+    function triggerStarBurst() {
+      if (!state.animationsEnabled) return;
+      const layer = document.getElementById("star-burst-layer");
+      const symbols = ["⭐", "🌟", "✨", "💫"];
+      for (let i = 0; i < 14; i++) {
+        const star = document.createElement("span");
+        star.className = "floating-star";
+        star.textContent = symbols[i % symbols.length];
+        const startX = 25 + Math.random() * 50;
+        const startY = 30 + Math.random() * 40;
+        const dx = (Math.random() - 0.5) * 240 + "px";
+        const dy = (-60 - Math.random() * 160) + "px";
+        star.style.left = startX + "%";
+        star.style.top = startY + "%";
+        star.style.setProperty("--dx", dx);
+        star.style.setProperty("--dy", dy);
+        layer.appendChild(star);
+        setTimeout(() => star.remove(), 1150);
+      }
+    }
+
+    /* ========================================================================
+       5. SISTEM SUARA BAHASA MELAYU (WEB SPEECH API ms-MY + FALLBACK MP3)
+       ======================================================================== */
+    function detectMalayVoice() {
+      if (!state.speechSupported) return;
+      const voices = window.speechSynthesis.getVoices();
+      if (!voices || voices.length === 0) return;
+
+      // Cari suara ms-MY atau ms atau id sebagai sandaran terdekat
+      state.malayVoice =
+        voices.find(v => v.lang && v.lang.toLowerCase() === "ms-my") ||
+        voices.find(v => v.lang && v.lang.toLowerCase().startsWith("ms")) ||
+        null;
+    }
+
+    if ("speechSynthesis" in window) {
+      detectMalayVoice();
+      window.speechSynthesis.onvoiceschanged = detectMalayVoice;
+    }
+
+    function stopSpeech() {
+      try {
+        if ("speechSynthesis" in window) {
+          window.speechSynthesis.cancel();
+        }
+        const mp3Player = document.getElementById("clue-mp3-player");
+        if (mp3Player) {
+          mp3Player.pause();
+          mp3Player.currentTime = 0;
+        }
+      } catch (e) {}
+    }
+
+    function playClueAudio(clueId) {
+      const clue = CLUES_DATA[clueId];
+      const pState = state.cluesProgress[clueId];
+      const statusEl = document.getElementById("audio-status-msg");
+      const fallbackBox = document.getElementById("mp3-fallback-box");
+      const mp3Player = document.getElementById("clue-mp3-player");
+
+      stopSpeech();
+      detectMalayVoice();
+
+      // Jika guru telah menetapkan fail MP3 sebenar, mainkan MP3 tersebut dahulu
+      if (clue.mp3Url && clue.mp3Url.trim() !== "") {
+        fallbackBox.style.display = "flex";
+        mp3Player.src = clue.mp3Url;
+        mp3Player.play().then(() => {
+          statusEl.className = "audio-status-msg";
+          statusEl.innerHTML = "🔊 Sedang memainkan rakaman audio MP3 petunjuk...";
+          markAudioListened(clueId);
+        }).catch(() => {
+          statusEl.className = "audio-status-msg warning";
+          statusEl.innerHTML = "⚠️ Sila tekan butang main (▶) pada pemain audio di bawah untuk mendengar petunjuk.";
+        });
+        return;
+      }
+
+      // Cuba Web Speech API dengan bahasa ms-MY
+      if (state.speechSupported) {
+        try {
+          const utterance = new SpeechSynthesisUtterance(clue.audioText);
+          utterance.lang = "ms-MY";
+          utterance.rate = 0.92; // Kadar sebutan yang jelas untuk murid Tahun 4
+          utterance.pitch = 1.05;
+          if (state.malayVoice) {
+            utterance.voice = state.malayVoice;
+          }
+
+          let started = false;
+
+          utterance.onstart = () => {
+            started = true;
+            statusEl.className = "audio-status-msg";
+            statusEl.innerHTML = state.malayVoice
+              ? "🔊 Sedang membacakan petunjuk dalam Bahasa Melayu (ms-MY)..."
+              : "🔊 Sedang membacakan petunjuk... (Jika sebutan kurang jelas pada pelayar ini, kamu juga boleh guna Teks Sokongan).";
+            markAudioListened(clueId);
+          };
+
+          utterance.onend = () => {
+            statusEl.className = "audio-status-msg";
+            statusEl.innerHTML = "✅ Petunjuk selesai dibacakan! Kamu boleh tekan <strong>DENGAR SEMULA</strong> atau terus jawab soalan di bawah.";
+            markAudioListened(clueId);
+          };
+
+          utterance.onerror = () => {
+            showAudioFallback(clueId);
+          };
+
+          window.speechSynthesis.speak(utterance);
+
+          // Pengesan keselamatan jika iframe Google Sites menyekat speechSynthesis secara senyap
+          setTimeout(() => {
+            if (!started && !pState.audioListened) {
+              showAudioFallback(clueId);
+            }
+          }, 1300);
+
+          // Jika tiada suara khusus ms-MY ditemui, paparkan juga pilihan bantuan mesra murid
+          if (!state.malayVoice) {
+            fallbackBox.style.display = "flex";
+          }
+        } catch (err) {
+          showAudioFallback(clueId);
+        }
+      } else {
+        showAudioFallback(clueId);
+      }
+    }
+
+    function showAudioFallback(clueId) {
+      const statusEl = document.getElementById("audio-status-msg");
+      const fallbackBox = document.getElementById("mp3-fallback-box");
+      statusEl.className = "audio-status-msg warning";
+      statusEl.innerHTML = "⚠️ Suara automatik Bahasa Melayu tidak tersedia pada pelayar ini. Guru boleh menggunakan audio MP3 di bawah atau murid boleh tekan <strong>Buka Teks Sokongan</strong> untuk meneruskan penyiasatan.";
+      fallbackBox.style.display = "flex";
+    }
+
+    function markAudioListened(clueId) {
+      const pState = state.cluesProgress[clueId];
+      if (!pState.audioListened) {
+        pState.audioListened = true;
+        renderClueModalContent(clueId);
+      }
+    }
+
+    /* ========================================================================
+       6. PEMAPARAN TETINGKAP PETUNJUK & SOALAN BERPERINGKAT
+       ======================================================================== */
+    function openClueModal(clueId) {
+      playSfx("click");
+      state.activeClueId = clueId;
+      const clue = CLUES_DATA[clueId];
+      const pState = state.cluesProgress[clueId];
+
+      document.getElementById("clue-modal-title").textContent = "🔎 " + clue.title;
+      document.getElementById("clue-icon-preview").innerHTML = clue.iconSvg;
+      document.getElementById("transcript-text").textContent = '"' + clue.audioText + '"';
+
+      // Tetapkan paparan sokongan mengikut tahap pembelajaran terbeza
+      const bimbinganBox = document.getElementById("bimbingan-support-box");
+      if (state.difficulty === "bimbingan") {
+        bimbinganBox.style.display = "block";
+        const kwContainer = document.getElementById("keyword-chips-container");
+        kwContainer.innerHTML = clue.keywords
+          .map(k => `<span class="keyword-chip">🔑 ${k}</span>`)
+          .join("");
+        document.getElementById("bimbingan-extra-tip").textContent = "💡 " + clue.extraHint;
+      } else {
+        bimbinganBox.style.display = "none";
+      }
+
+      // Reset status mesej audio
+      const statusEl = document.getElementById("audio-status-msg");
+      const fallbackBox = document.getElementById("mp3-fallback-box");
+      fallbackBox.style.display = clue.mp3Url ? "flex" : "none";
+
+      if (pState.audioListened) {
+        statusEl.className = "audio-status-msg";
+        statusEl.innerHTML = "✅ Petunjuk sudah didengar. Tekan <strong>DENGAR SEMULA</strong> jika ingin mendengar sekali lagi.";
+      } else {
+        statusEl.className = "audio-status-msg";
+        statusEl.innerHTML = "🎧 Tekan butang <strong>\"DENGAR PETUNJUK\"</strong> untuk membuka soalan penyiasatan.";
+      }
+
+      document.getElementById("transcript-box").style.display = pState.transcriptVisible ? "block" : "none";
+      document.getElementById("btn-toggle-transcript").textContent = pState.transcriptVisible
+        ? "🙈 Tutup Teks Sokongan"
+        : "📄 Buka Teks Sokongan";
+
+      renderClueModalContent(clueId);
+      document.getElementById("clue-modal").classList.remove("hidden");
+    }
+
+    function closeClueModal() {
+      playSfx("click");
+      stopSpeech();
+      document.getElementById("clue-modal").classList.add("hidden");
+      state.activeClueId = null;
+      updateRoomProgressUI();
+    }
+
+    function renderClueModalContent(clueId) {
+      const clue = CLUES_DATA[clueId];
+      const pState = state.cluesProgress[clueId];
+      const qArea = document.getElementById("question-area");
+      const stepIndicator = document.getElementById("clue-step-indicator");
+
+      // Jika belum mendengar petunjuk, kunci bahagian soalan
+      if (!pState.audioListened) {
+        stepIndicator.textContent = "Status: Sila dengar petunjuk audio dahulu 🔒";
+        qArea.innerHTML = `
+          <div class="question-card locked">
+            <span class="step-badge step-tersurat">🔒 SOALAN TERKUNCI</span>
+            <p class="question-text">Sila tekan butang "🎧 DENGAR PETUNJUK" di atas terlebih dahulu sebelum menjawab soalan penyiasatan.</p>
+          </div>
+        `;
+        return;
+      }
+
+      // Langkah 1: SOALAN TERSURAT
+      if (pState.step === "tersurat") {
+        stepIndicator.textContent = "Bahagian 1 daripada 2: Mencari Maklumat Tersurat";
+        qArea.innerHTML = buildQuestionHtml(
+          clueId,
+          "tersurat",
+          "🔍 SOALAN TERSURAT (Maklumat Jelas)",
+          "step-tersurat",
+          clue.tersurat,
+          pState.wrongOptionsTersurat,
+          pState
+        );
+        return;
+      }
+
+      // Langkah 2: SOALAN TERSIRAT
+      if (pState.step === "tersirat") {
+        stepIndicator.textContent = "Bahagian 2 daripada 2: Membongkar Maklumat Tersirat";
+        qArea.innerHTML = buildQuestionHtml(
+          clueId,
+          "tersirat",
+          "🧠 SOALAN TERSIRAT (Membuat Inferens)",
+          "step-tersirat",
+          clue.tersirat,
+          pState.wrongOptionsTersirat,
+          pState
+        );
+        return;
+      }
+
+      // Langkah 3 (Khusus Tahap LANJUTAN): Refleksi Alasan Inferens
+      if (pState.step === "lanjutan") {
+        stepIndicator.textContent = "Cabaran Lanjutan: Jelaskan Alasan Inferens";
+        qArea.innerHTML = `
+          <div class="question-card">
+            <span class="step-badge step-lanjutan">🟣 CABARAN LANJUTAN — ALASAN INFERENS</span>
+            <p class="question-text">Tahniah! Jawapan tersurat dan tersirat kamu tepat. Sekarang, jelaskan alasan mengapa kamu memilih jawapan tersirat tersebut:</p>
+            <textarea id="lanjutan-input" class="lanjutan-textarea" placeholder="Tulis alasan kamu di sini... Contoh: Saya membuat inferens ini kerana...">${pState.lanjutanReason}</textarea>
+            <div id="lanjutan-msg"></div>
+            <button type="button" class="btn-pixel btn-success" onclick="submitLanjutanReason(${clueId})">
+              ✅ SAHKAN PENJELASAN DETEKTIF
+            </button>
+          </div>
+        `;
+        return;
+      }
+
+      // Langkah 4: SELESAI UNTUK PETUNJUK INI
+      if (pState.step === "completed") {
+        stepIndicator.textContent = "Status: Petunjuk Berjaya Dibongkar! ✅";
+        qArea.innerHTML = `
+          <div class="feedback-banner feedback-success">
+            <div style="font-size: 1.05rem;">✅ SYABAS, DETEKTIF CILIK! Kamu berjaya menemui petunjuk!</div>
+            <div>• <strong>Maklumat Tersurat:</strong> ${clue.tersurat.options.find(o => o.key === clue.tersurat.correct).text}</div>
+            <div>• <strong>Maklumat Tersirat:</strong> ${clue.tersirat.options.find(o => o.key === clue.tersirat.correct).text}</div>
+            ${pState.lanjutanReason ? `<div>• <strong>Alasan Detektif (Lanjutan):</strong> "${escapeHtml(pState.lanjutanReason)}"</div>` : ""}
+            <div style="margin-top: 6px;">
+              <button type="button" class="btn-pixel btn-gold" onclick="closeClueModal()">
+                🔎 TERUSKAN MENYIASAT OBJEK LAIN
+              </button>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    function buildQuestionHtml(clueId, qType, badgeLabel, badgeClass, qObj, wrongList, pState) {
+      const clue = CLUES_DATA[clueId];
+      const isErrorState = pState.feedbackType === "error";
+
+      const optionsHtml = qObj.options.map(opt => {
+        const isWrongPicked = wrongList.includes(opt.key);
+        return `
+          <button
+            type="button"
+            class="option-btn ${isWrongPicked ? "wrong-picked" : ""}"
+            ${isErrorState || isWrongPicked ? "disabled" : ""}
+            onclick="handleAnswer(${clueId}, '${qType}', '${opt.key}')"
+          >
+            <span class="opt-letter">${opt.key}</span>
+            <span>${opt.text}</span>
+          </button>
+        `;
+      }).join("");
+
+      let feedbackHtml = "";
+      if (pState.feedbackType === "success") {
+        feedbackHtml = `
+          <div class="feedback-banner feedback-success">
+            <div>${pState.feedbackMsg}</div>
+          </div>
+        `;
+      } else if (pState.feedbackType === "error") {
+        feedbackHtml = `
+          <div class="feedback-banner feedback-error">
+            <div>${pState.feedbackMsg}</div>
+            ${pState.showExtraHint ? `<div class="extra-hint-box">💡 <strong>Petunjuk Tambahan:</strong> ${clue.extraHint}</div>` : ""}
+            <div>
+              <button type="button" class="btn-pixel btn-gold" onclick="retryCurrentQuestion(${clueId})">
+                🔄 CUBA LAGI
+              </button>
+            </div>
+          </div>
+        `;
+      }
+
+      return `
+        <div class="question-card">
+          <span class="step-badge ${badgeClass}">${badgeLabel}</span>
+          <p class="question-text">${qObj.question}</p>
+          <div class="options-grid">
+            ${optionsHtml}
+          </div>
+          ${feedbackHtml}
+        </div>
+      `;
+    }
+
+    /* ========================================================================
+       7. LOGIK SEMAKAN JAWAPAN & MAKLUM BALAS AUTOMATIK
+       ======================================================================== */
+    function handleAnswer(clueId, qType, selectedKey) {
+      const clue = CLUES_DATA[clueId];
+      const pState = state.cluesProgress[clueId];
+      const targetQ = clue[qType];
+
+      if (selectedKey === targetQ.correct) {
+        playSfx("success");
+        triggerStarBurst();
+        pState.feedbackType = "success";
+        pState.feedbackMsg = '✅ "SYABAS, DETEKTIF CILIK! Kamu berjaya menemui petunjuk!"';
+        renderClueModalContent(clueId);
+
+        // Beralih ke peringkat seterusnya selepas jeda ringkas supaya murid baca pujian
+        setTimeout(() => {
+          pState.feedbackType = null;
+          pState.feedbackMsg = "";
+          pState.showExtraHint = false;
+
+          if (qType === "tersurat") {
+            pState.step = "tersirat";
+            renderClueModalContent(clueId);
+          } else if (qType === "tersirat") {
+            if (state.difficulty === "lanjutan") {
+              pState.step = "lanjutan";
+              renderClueModalContent(clueId);
+            } else {
+              completeClue(clueId);
+            }
+          }
+        }, 1250);
+
+      } else {
+        playSfx("error");
+        pState.feedbackType = "error";
+        pState.feedbackMsg = '🔍 "Jangan putus asa! Dengar semula petunjuk dan cuba fikirkan jawapan yang lebih tepat."';
+
+        if (qType === "tersurat") {
+          pState.attemptsTersurat += 1;
+          if (!pState.wrongOptionsTersurat.includes(selectedKey)) {
+            pState.wrongOptionsTersurat.push(selectedKey);
+          }
+          if (pState.attemptsTersurat >= 2) {
+            pState.showExtraHint = true;
+          }
+        } else {
+          pState.attemptsTersirat += 1;
+          if (!pState.wrongOptionsTersirat.includes(selectedKey)) {
+            pState.wrongOptionsTersirat.push(selectedKey);
+          }
+          if (pState.attemptsTersirat >= 2) {
+            pState.showExtraHint = true;
+          }
+        }
+
+        renderClueModalContent(clueId);
+      }
+    }
+
+    function retryCurrentQuestion(clueId) {
+      playSfx("click");
+      const pState = state.cluesProgress[clueId];
+      pState.feedbackType = null;
+      pState.feedbackMsg = "";
+      renderClueModalContent(clueId);
+    }
+
+    function submitLanjutanReason(clueId) {
+      const input = document.getElementById("lanjutan-input");
+      const msgBox = document.getElementById("lanjutan-msg");
+      const val = input ? input.value.trim() : "";
+
+      if (val.length < 6) {
+        playSfx("error");
+        msgBox.innerHTML = `<div class="feedback-banner feedback-error" style="padding: 8px;">🔍 Sila tulis sekurang-kurangnya satu ayat ringkas untuk menjelaskan alasan kamu.</div>`;
+        return;
+      }
+
+      playSfx("success");
+      triggerStarBurst();
+      state.cluesProgress[clueId].lanjutanReason = val;
+      completeClue(clueId);
+    }
+
+    function completeClue(clueId) {
+      const pState = state.cluesProgress[clueId];
+      pState.step = "completed";
+      pState.solved = true;
+      renderClueModalContent(clueId);
+      updateRoomProgressUI();
+      saveMissionRecovery();
+
+      // Semak jika semua 4/4 petunjuk telah selesai
+      const solvedCount = getSolvedCount();
+      if (solvedCount === 4) {
+        setTimeout(() => {
+          if (state.activeClueId === clueId) {
+            closeClueModal();
+          }
+          openFinalModal();
+        }, 1400);
+      }
+    }
+
+    /* ========================================================================
+       8. SISTEM KEMAJUAN & CABARAN AKHIR
+       ======================================================================== */
+    function getSolvedCount() {
+      return Object.values(state.cluesProgress).filter(c => c.solved).length;
+    }
+
+    function updateRoomProgressUI() {
+      const solvedCount = getSolvedCount();
+      document.getElementById("progress-display").textContent = `🔎 PETUNJUK DITEMUI: ${solvedCount}/4`;
+
+      for (let id = 1; id <= 4; id++) {
+        const isSolved = state.cluesProgress[id].solved;
+        const hotspot = document.getElementById(`hotspot-${id}`);
+        const svgBadge = document.getElementById(`badge-svg-${id}`);
+        const cardBtn = document.getElementById(`card-btn-${id}`);
+        const chip = document.getElementById(`chip-${id}`);
+
+        if (isSolved) {
+          hotspot.classList.add("solved");
+          svgBadge.textContent = `${id} ✅`;
+          cardBtn.classList.add("solved");
+          chip.textContent = "✅ Selesai";
+        } else {
+          hotspot.classList.remove("solved");
+          svgBadge.textContent = `${id} 🔍`;
+          cardBtn.classList.remove("solved");
+          chip.textContent = "🔍 Belum Selesai";
+        }
+      }
+
+      // Papar butang pintasan Cabaran Akhir jika 4/4 selesai
+      const shortcutWrap = document.getElementById("final-shortcut-wrap");
+      shortcutWrap.style.display = solvedCount === 4 ? "inline-block" : "none";
+    }
+
+    function openFinalModal() {
+      playSfx("success");
+      triggerStarBurst();
+      updatePersonalizationUI();
+      document.getElementById("final-modal").classList.remove("hidden");
+      saveMissionRecovery();
+    }
+
+    function resetMission() {
+      playSfx("click");
+      stopSpeech();
+      resetRecordingState();
+      for (let id = 1; id <= 4; id++) {
+        state.cluesProgress[id] = createInitialClueState();
+      }
+      updateRoomProgressUI();
+      closeModal("final-modal");
+      saveMissionRecovery();
+    }
+
+    /* ========================================================================
+       8B. SISTEM PENDAFTARAN MURID & PERSONALISASI (sessionStorage)
+       ======================================================================== */
+    // Simpan sesi dan kemajuan SEBELUM pelayar meminta izin mikrofon.
+    // Ini hanya memulihkan paparan selepas iframe reload; ia tidak memintas sekatan mikrofon.
+    function saveMissionRecovery() {
+      if (!state.student.name) return;
+      try {
+        sessionStorage.setItem(RECOVERY_KEY, JSON.stringify({
+          student: state.student,
+          cluesProgress: state.cluesProgress,
+          difficulty: state.difficulty,
+          finalOpen: !document.getElementById("final-modal").classList.contains("hidden"),
+          savedAt: Date.now()
+        }));
+      } catch (err) { console.warn("Pemulihan sesi tidak dapat disimpan", err); }
+    }
+
+    function restoreMissionRecovery() {
+      let data;
+      try { data = JSON.parse(sessionStorage.getItem(RECOVERY_KEY) || "null"); }
+      catch (err) { return false; }
+      if (!data || !data.student || !data.student.name || !data.student.className) return false;
+      state.student.name = data.student.name;
+      state.student.className = data.student.className;
+      if (data.cluesProgress) {
+        for (let id = 1; id <= 4; id++) {
+          if (data.cluesProgress[id]) state.cluesProgress[id] =
+            Object.assign(createInitialClueState(), data.cluesProgress[id]);
+        }
+      }
+      if (["bimbingan", "sederhana", "lanjutan"].includes(data.difficulty)) state.difficulty = data.difficulty;
+      document.getElementById("start-overlay").classList.add("hidden");
+      updatePersonalizationUI();
+      updateRoomProgressUI();
+      if (data.finalOpen && getSolvedCount() === 4) {
+        document.getElementById("final-modal").classList.remove("hidden");
+        try {
+          if (sessionStorage.getItem(MIC_RELOAD_KEY) === "pending") {
+            setStudioStatus("warning", "⚠️ Paparan dimuat semula ketika meminta akses mikrofon. Identiti dan kemajuan kamu dipulihkan. Rakaman mungkin tidak disokong dalam Google Sites Embed. Jangan ulang berkali-kali; cuba halaman HTTPS berasingan yang memberi kebenaran mikrofon.");
+            sessionStorage.removeItem(MIC_RELOAD_KEY);
+          }
+        } catch (err) {}
+      }
+      return true;
+    }
+
+    function saveStudentSession(name, className) {
+      const cleanName = String(name || "").trim();
+      const cleanClass = String(className || "").trim();
+      if (!cleanName || !cleanClass) return;
+
+      state.student.name = cleanName;
+      state.student.className = cleanClass;
+      try {
+        sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(state.student));
+      } catch (e) {
+        // Kekal dalam state memori jika sessionStorage disekat pelayar
+      }
+      updatePersonalizationUI();
+      saveMissionRecovery();
+    }
+
+    function loadStudentSession() {
+      // Semak sessionStorage dalam tab yang sama
+      try {
+        const raw = sessionStorage.getItem(SESSION_STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && parsed.name && parsed.className) {
+            state.student.name = parsed.name;
+            state.student.className = parsed.className;
+            updatePersonalizationUI();
+            document.getElementById("start-overlay").classList.add("hidden");
+            return true;
+          }
+        }
+      } catch (e) {}
+
+      return false;
+    }
+
+    function updatePersonalizationUI() {
+      const name = state.student.name || "Cilik";
+      const cls = state.student.className || "-";
+      const upperName = name.toUpperCase();
+
+      const hudBadge = document.getElementById("hud-detective-badge");
+      if (hudBadge) {
+        hudBadge.textContent = `👤 Detektif: ${name} (${cls})`;
+      }
+
+      const finalTitle = document.getElementById("final-title");
+      if (finalTitle) {
+        finalTitle.textContent = `🏆 TAHNIAH, DETEKTIF ${upperName}!`;
+      }
+
+      const studioLabel = document.getElementById("studio-student-label");
+      if (studioLabel) {
+        studioLabel.textContent = `Detektif ${name} • ${cls}`;
+      }
+    }
+
+    function startNewStudentSession() {
+      playSfx("click");
+      stopSpeech();
+      resetRecordingState();
+      try {
+        sessionStorage.removeItem(SESSION_STORAGE_KEY);
+        sessionStorage.removeItem(RECOVERY_KEY);
+        sessionStorage.removeItem(MIC_RELOAD_KEY);
+      } catch (e) {}
+
+      state.student.name = "";
+      state.student.className = "";
+      for (let id = 1; id <= 4; id++) {
+        state.cluesProgress[id] = createInitialClueState();
+      }
+      updateRoomProgressUI();
+      updatePersonalizationUI();
+
+      // Kosongkan borang pendaftaran & tutup modal lain
+      document.getElementById("input-detective-name").value = "";
+      document.getElementById("input-detective-class").value = "";
+      document.getElementById("reg-error-msg").style.display = "none";
+      closeModal("final-modal");
+      closeModal("guide-modal");
+      closeModal("diff-modal");
+      if (state.activeClueId) closeClueModal();
+      document.getElementById("start-overlay").classList.remove("hidden");
+    }
+
+    /* ========================================================================
+       8C. STUDIO RAKAMAN SUARA (MediaRecorder API) & PENJANA NAMA FAIL UNIK
+       ======================================================================== */
+    function sanitizeFilePart(text) {
+      return String(text || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-zA-Z0-9]/g, "")
+        .slice(0, 24) || "Murid";
+    }
+
+    function generateRecordingFilename(nama, kelas, ext) {
+      const cleanName = sanitizeFilePart(nama);
+      const cleanClass = sanitizeFilePart(kelas);
+      const uniqueSuffix = Date.now().toString().slice(-6) + Math.floor(10 + Math.random() * 89);
+      const safeExt = ext || "webm";
+      return `Misi2_${cleanName}_${cleanClass}_${uniqueSuffix}.${safeExt}`;
+    }
+
+    function getSupportedAudioMimeType() {
+      if (typeof MediaRecorder === "undefined") return { mimeType: "", ext: "webm" };
+      const candidates = [
+        { mimeType: "audio/webm;codecs=opus", ext: "webm" },
+        { mimeType: "audio/webm", ext: "webm" },
+        { mimeType: "audio/ogg;codecs=opus", ext: "ogg" },
+        { mimeType: "audio/mp4", ext: "mp4" }
+      ];
+      for (const item of candidates) {
+        if (MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(item.mimeType)) {
+          return item;
+        }
+      }
+      return { mimeType: "", ext: "webm" };
+    }
+
+    function formatDuration(sec) {
+      const m = String(Math.floor(sec / 60)).padStart(2, "0");
+      const s = String(sec % 60).padStart(2, "0");
+      return `${m}:${s}`;
+    }
+
+    function setStudioStatus(type, htmlMsg) {
+      const banner = document.getElementById("studio-status-banner");
+      if (!banner) return;
+      banner.className = "studio-status-banner" + (type ? ` ${type}` : "");
+      banner.innerHTML = htmlMsg;
+    }
+
+    function resetRecordingState() {
+      const rec = state.recording;
+      if (rec.timerInterval) {
+        clearInterval(rec.timerInterval);
+        rec.timerInterval = null;
+      }
+      if (rec.mediaRecorder && rec.isRecording) {
+        try { rec.mediaRecorder.stop(); } catch (e) {}
+      }
+      if (rec.stream) {
+        rec.stream.getTracks().forEach(t => t.stop());
+        rec.stream = null;
+      }
+      if (rec.audioUrl) {
+        URL.revokeObjectURL(rec.audioUrl);
+        rec.audioUrl = null;
+      }
+      rec.mediaRecorder = null;
+      rec.chunks = [];
+      rec.audioBlob = null;
+      rec.generatedFilename = "";
+      rec.isRecording = false;
+      rec.secondsElapsed = 0;
+      rec.isSubmitting = false;
+
+      const dot = document.getElementById("rec-indicator-dot");
+      const timerTxt = document.getElementById("rec-timer-text");
+      const playbackPanel = document.getElementById("playback-panel");
+      const audioEl = document.getElementById("student-audio-playback");
+      const dlBtn = document.getElementById("btn-download-local");
+
+      if (dot) dot.classList.remove("recording");
+      if (timerTxt) timerTxt.textContent = "00:00";
+      if (playbackPanel) playbackPanel.style.display = "none";
+      if (audioEl) {
+        audioEl.pause();
+        audioEl.removeAttribute("src");
+      }
+      if (dlBtn) dlBtn.disabled = true;
+
+      updateRecordingButtons();
+      setStudioStatus("", 'Tekan butang <strong>"🔴 MULA RAKAMAN"</strong> dan benarkan akses mikrofon untuk merakam jawapan lisan kamu.');
+    }
+
+    function updateRecordingButtons() {
+      const rec = state.recording;
+      const hasAudio = Boolean(rec.audioBlob);
+
+      document.getElementById("btn-rec-start").disabled = rec.isRecording || rec.isSubmitting;
+      document.getElementById("btn-rec-stop").disabled = !rec.isRecording;
+      document.getElementById("btn-rec-play").disabled = rec.isRecording || !hasAudio || rec.isSubmitting;
+      document.getElementById("btn-rec-reset").disabled = rec.isRecording || !hasAudio || rec.isSubmitting;
+      document.getElementById("btn-rec-submit").disabled = rec.isRecording || !hasAudio || rec.isSubmitting;
+    }
+
+    async function startVoiceRecording() {
+      playSfx("click");
+
+      // Pastikan skrin pendaftaran kekal tersembunyi & sesi murid tidak terjejas
+      const startOverlay = document.getElementById("start-overlay");
+      if (startOverlay && state.student.name) {
+        startOverlay.classList.add("hidden");
+      }
+
+      saveMissionRecovery();
+      try { sessionStorage.setItem(MIC_RELOAD_KEY, "pending"); } catch (err) {}
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || typeof MediaRecorder === "undefined") {
+        setStudioStatus(
+          "error",
+          "⚠️ Pelayar atau bingkai Google Sites ini tidak menyokong rakaman mikrofon secara langsung. Sila buka pautan permainan ini terus dalam tetingkap pelayar penuh (Chrome/Edge/Safari) dan benarkan akses mikrofon."
+        );
+        return;
+      }
+
+      // Bersihkan rakaman lama sebelum mula rakaman baharu (tanpa menyentuh nama/kelas murid)
+      if (state.recording.audioUrl) {
+        URL.revokeObjectURL(state.recording.audioUrl);
+        state.recording.audioUrl = null;
+      }
+      state.recording.audioBlob = null;
+      state.recording.chunks = [];
+      document.getElementById("playback-panel").style.display = "none";
+
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        try { sessionStorage.removeItem(MIC_RELOAD_KEY); } catch (err) {}
+        const chosen = getSupportedAudioMimeType();
+        const options = chosen.mimeType ? { mimeType: chosen.mimeType } : undefined;
+        const recorder = new MediaRecorder(stream, options);
+
+        state.recording.stream = stream;
+        state.recording.mediaRecorder = recorder;
+        state.recording.mimeType = recorder.mimeType || chosen.mimeType || "audio/webm";
+        state.recording.fileExt = chosen.ext;
+        state.recording.chunks = [];
+        state.recording.isRecording = true;
+        state.recording.secondsElapsed = 0;
+
+        recorder.ondataavailable = (event) => {
+          if (event.data && event.data.size > 0) {
+            state.recording.chunks.push(event.data);
+          }
+        };
+
+        recorder.onstop = () => {
+          if (state.recording.timerInterval) {
+            clearInterval(state.recording.timerInterval);
+            state.recording.timerInterval = null;
+          }
+          state.recording.isRecording = false;
+          const dotEl = document.getElementById("rec-indicator-dot");
+          if (dotEl) dotEl.classList.remove("recording");
+
+          if (state.recording.stream) {
+            state.recording.stream.getTracks().forEach(track => track.stop());
+            state.recording.stream = null;
+          }
+
+          if (state.recording.chunks.length > 0) {
+            const blob = new Blob(state.recording.chunks, { type: state.recording.mimeType });
+            const url = URL.createObjectURL(blob);
+            const filename = generateRecordingFilename(
+              state.student.name,
+              state.student.className,
+              state.recording.fileExt
+            );
+
+            state.recording.audioBlob = blob;
+            state.recording.audioUrl = url;
+            state.recording.generatedFilename = filename;
+
+            const audioEl = document.getElementById("student-audio-playback");
+            if (audioEl) audioEl.src = url;
+            const tagEl = document.getElementById("generated-filename-tag");
+            if (tagEl) tagEl.textContent = `📁 Nama Fail: ${filename}`;
+
+            const dlBtn = document.getElementById("btn-download-local");
+            if (dlBtn) dlBtn.disabled = false;
+
+            const panelEl = document.getElementById("playback-panel");
+            if (panelEl) panelEl.style.display = "flex";
+
+            setStudioStatus(
+              "success",
+              '✅ Rakaman selesai! Tekan <strong>"▶️ DENGAR SEMULA"</strong> untuk menyemak suara kamu, kemudian tekan <strong>"📤 HANTAR KEPADA CIKGU"</strong>.'
+            );
+          }
+
+          updateRecordingButtons();
+        };
+
+        recorder.start();
+        document.getElementById("rec-indicator-dot").classList.add("recording");
+        document.getElementById("rec-timer-text").textContent = "00:00";
+        updateRecordingButtons();
+        setStudioStatus("", "🔴 <strong>Sedang merakam suara...</strong> Bercakap dengan jelas, kemudian tekan <strong>\"⏹️ HENTIKAN RAKAMAN\"</strong> apabila selesai.");
+
+        state.recording.timerInterval = setInterval(() => {
+          state.recording.secondsElapsed += 1;
+          document.getElementById("rec-timer-text").textContent = formatDuration(state.recording.secondsElapsed);
+        }, 1000);
+      } catch (err) {
+        try { sessionStorage.removeItem(MIC_RELOAD_KEY); } catch (e) {}
+        console.error("Ralat akses mikrofon:", err);
+        state.recording.isRecording = false;
+        updateRecordingButtons();
+        setStudioStatus(
+          "error",
+          "⚠️ Akses mikrofon disekat atau mikrofon tidak ditemui pada peranti ini. Sila benarkan kebenaran mikrofon pada pelayar (ikon kunci/mikrofon di atas) dan tekan <strong>\"🔴 MULA RAKAMAN\"</strong> semula."
+        );
+      }
+    }
+
+    function downloadRecordedAudio() {
+      playSfx("click");
+      const rec = state.recording;
+      if (!rec.audioUrl || !rec.generatedFilename) return;
+      const tempLink = document.createElement("a");
+      tempLink.style.display = "none";
+      tempLink.href = rec.audioUrl;
+      tempLink.download = rec.generatedFilename;
+      document.body.appendChild(tempLink);
+      tempLink.click();
+      setTimeout(() => tempLink.remove(), 150);
+    }
+
+    function stopVoiceRecording() {
+      playSfx("click");
+      if (state.recording.mediaRecorder && state.recording.isRecording) {
+        state.recording.mediaRecorder.stop();
+      }
+    }
+
+    function playRecordedAudio() {
+      playSfx("click");
+      const audioEl = document.getElementById("student-audio-playback");
+      if (audioEl && state.recording.audioUrl) {
+        audioEl.currentTime = 0;
+        audioEl.play().catch(() => {});
+      }
+    }
+
+    function blobToBase64(blob) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const result = String(reader.result || "");
+          const base64Data = result.includes(",") ? result.split(",")[1] : result;
+          resolve(base64Data);
+        };
+        reader.onerror = () => reject(new Error("Gagal membaca fail audio."));
+        reader.readAsDataURL(blob);
+      });
+    }
+
+    /* ========================================================================
+       8D. FUNGSI PENGHANTARAN KE GOOGLE APPS SCRIPT / GOOGLE DRIVE
+       ======================================================================== */
+    async function hantarRakamanKeGuru() {
+      playSfx("click");
+      const rec = state.recording;
+      if (!rec.audioBlob || rec.isSubmitting) return;
+
+      // Semak sama ada URL backend Google Apps Script telah disambungkan oleh guru
+      if (!APPS_SCRIPT_WEB_APP_URL || APPS_SCRIPT_WEB_APP_URL.trim() === "") {
+        setStudioStatus(
+          "warning",
+          `⚠️ <strong>Sistem penghantaran kepada guru belum disambungkan.</strong><br>
+          Maklumat fail kamu sudah sedia: <code>${escapeHtml(rec.generatedFilename)}</code> (Detektif: <strong>${escapeHtml(state.student.name)}</strong>, Kelas: <strong>${escapeHtml(state.student.className)}</strong>).<br>
+          Sementara menunggu sambungan pelayan guru, kamu boleh tekan <strong>"💾 Simpan Salinan Fail Audio"</strong> di atas.`
+        );
+        return;
+      }
+
+      try {
+        rec.isSubmitting = true;
+        updateRecordingButtons();
+        setStudioStatus("", "⏳ Sedang menghantar rakaman suara kepada cikgu... Sila tunggu sebentar.");
+
+        const audioBase64 = await blobToBase64(rec.audioBlob);
+        const payload = {
+          filename: rec.generatedFilename,
+          studentName: state.student.name,
+          studentClass: state.student.className,
+          missionName: MISSION_NAME,
+          folderId: GOOGLE_DRIVE_FOLDER_ID,
+          folderUrl: GOOGLE_DRIVE_FOLDER_URL,
+          mimeType: rec.mimeType,
+          audioBase64: audioBase64
+        };
+
+        const response = await fetch(APPS_SCRIPT_WEB_APP_URL.trim(), {
+          method: "POST",
+          headers: {
+            "Content-Type": "text/plain;charset=utf-8"
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+          throw new Error("Ralat pelayan HTTP " + response.status);
+        }
+
+        const result = await response.json();
+        if (result && (result.status === "success" || result.success === true)) {
+          playSfx("success");
+          triggerStarBurst();
+          setStudioStatus(
+            "success",
+            `✅ <strong>Rakaman berjaya dihantar!</strong><br>Fail <code>${escapeHtml(rec.generatedFilename)}</code> telah direkodkan untuk <strong>Detektif ${escapeHtml(state.student.name)} (${escapeHtml(state.student.className)})</strong>.`
+          );
+        } else {
+          throw new Error((result && result.message) || "Pengesahan penghantaran tidak diterima daripada pelayan.");
+        }
+      } catch (err) {
+        playSfx("error");
+        setStudioStatus(
+          "error",
+          `❌ Penghantaran gagal buat masa ini (${escapeHtml(err.message)}). Sila simpan salinan fail audio menggunakan butang <strong>"💾 Simpan Salinan Fail Audio"</strong> atau cuba sebentar lagi.`
+        );
+      } finally {
+        rec.isSubmitting = false;
+        updateRecordingButtons();
+      }
+    }
+
+    /* ========================================================================
+       9. PEMBELAJARAN TERBEZA & KAWALAN MODAL
+       ======================================================================== */
+    function setDifficulty(level) {
+      playSfx("click");
+      state.difficulty = level;
+
+      ["bimbingan", "sederhana", "lanjutan"].forEach(lvl => {
+        const card = document.getElementById(`diff-card-${lvl}`);
+        if (card) card.classList.toggle("active", lvl === level);
+      });
+
+      const labelMap = {
+        bimbingan: "🟢 Tahap: Bimbingan",
+        sederhana: "🔵 Tahap: Sederhana",
+        lanjutan: "🟣 Tahap: Lanjutan"
+      };
+      document.getElementById("level-indicator").textContent = labelMap[level];
+
+      // Jika tetingkap petunjuk sedang terbuka, kemas kini paparan sokongannya
+      if (state.activeClueId) {
+        openClueModal(state.activeClueId);
+      }
+    }
+
+    function openModal(id) {
+      playSfx("click");
+      document.getElementById(id).classList.remove("hidden");
+    }
+
+    function closeModal(id) {
+      playSfx("click");
+      document.getElementById(id).classList.add("hidden");
+    }
+
+    function escapeHtml(str) {
+      return str
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    /* ========================================================================
+       10. PENGIKAT ACARA (EVENT LISTENERS — TETIKUS, SENTUHAN & PAPAN KEKUNCI)
+       ======================================================================== */
+    document.addEventListener("DOMContentLoaded", () => {
+      window.addEventListener("pagehide", saveMissionRecovery);
+      // Muatkan sesi murid jika sudah didaftarkan dalam tab yang sama
+      if (!restoreMissionRecovery()) loadStudentSession();
+
+      // Borang Pendaftaran Detektif Cilik pada paparan permulaan
+      document.getElementById("detective-reg-form").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const nameInput = document.getElementById("input-detective-name");
+        const classInput = document.getElementById("input-detective-class");
+        const errBox = document.getElementById("reg-error-msg");
+
+        const nama = nameInput.value.trim();
+        const kelas = classInput.value.trim();
+
+        if (!nama || !kelas) {
+          playSfx("error");
+          errBox.style.display = "block";
+          if (!nama) nameInput.focus();
+          else classInput.focus();
+          return;
+        }
+
+        errBox.style.display = "none";
+        saveStudentSession(nama, kelas);
+        playSfx("success");
+        document.getElementById("start-overlay").classList.add("hidden");
+      });
+
+      document.getElementById("btn-start-guide").addEventListener("click", () => {
+        openModal("guide-modal");
+      });
+
+      // Butang bar kawalan atas
+      document.getElementById("btn-open-guide").addEventListener("click", () => openModal("guide-modal"));
+      document.getElementById("btn-open-diff").addEventListener("click", () => openModal("diff-modal"));
+      document.getElementById("btn-open-final").addEventListener("click", () => openFinalModal());
+      document.getElementById("btn-reset-mission").addEventListener("click", () => resetMission());
+      document.getElementById("btn-switch-user").addEventListener("click", () => startNewStudentSession());
+
+      // Kawalan Animasi & Kesan Bunyi
+      document.getElementById("btn-toggle-anim").addEventListener("click", (e) => {
+        state.animationsEnabled = !state.animationsEnabled;
+        document.body.classList.toggle("reduce-motion", !state.animationsEnabled);
+        e.currentTarget.setAttribute("aria-pressed", String(!state.animationsEnabled));
+        e.currentTarget.textContent = state.animationsEnabled ? "✨ Animasi: HIDUP" : "⏸️ Animasi: HENTI";
+        playSfx("click");
+      });
+
+      document.getElementById("btn-toggle-sfx").addEventListener("click", (e) => {
+        state.sfxEnabled = !state.sfxEnabled;
+        e.currentTarget.setAttribute("aria-pressed", String(!state.sfxEnabled));
+        e.currentTarget.textContent = state.sfxEnabled ? "🔊 Bunyi: HIDUP" : "🔇 Bunyi: SENYAP";
+        if (state.sfxEnabled) playSfx("click");
+      });
+
+      // Pengikat acara pada 4 objek SVG di dalam bilik penyiasatan
+      document.querySelectorAll(".clue-hotspot").forEach(hotspot => {
+        const clueId = Number(hotspot.getAttribute("data-clue-id"));
+        hotspot.addEventListener("click", () => openClueModal(clueId));
+        hotspot.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            openClueModal(clueId);
+          }
+        });
+      });
+
+      // Kawalan Studio Rakaman Suara
+      document.getElementById("btn-rec-start").addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        startVoiceRecording();
+      });
+      document.getElementById("btn-rec-stop").addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        stopVoiceRecording();
+      });
+      document.getElementById("btn-rec-play").addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        playRecordedAudio();
+      });
+      document.getElementById("btn-rec-reset").addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        playSfx("click");
+        resetRecordingState();
+      });
+      document.getElementById("btn-rec-submit").addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        hantarRakamanKeGuru();
+      });
+      document.getElementById("btn-download-local").addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        downloadRecordedAudio();
+      });
+      document.querySelectorAll(".obj-card-btn").forEach(btn => {
+        const clueId = Number(btn.getAttribute("data-clue-id"));
+        btn.addEventListener("click", () => openClueModal(clueId));
+      });
+
+      // Butang dalam modal petunjuk
+      document.getElementById("btn-play-clue").addEventListener("click", () => {
+        if (state.activeClueId) playClueAudio(state.activeClueId);
+      });
+
+      document.getElementById("btn-replay-clue").addEventListener("click", () => {
+        if (state.activeClueId) playClueAudio(state.activeClueId);
+      });
+
+      document.getElementById("btn-toggle-transcript").addEventListener("click", () => {
+        if (!state.activeClueId) return;
+        playSfx("click");
+        const pState = state.cluesProgress[state.activeClueId];
+        pState.transcriptVisible = !pState.transcriptVisible;
+        document.getElementById("transcript-box").style.display = pState.transcriptVisible ? "block" : "none";
+        document.getElementById("btn-toggle-transcript").textContent = pState.transcriptVisible
+          ? "🙈 Tutup Teks Sokongan"
+          : "📄 Buka Teks Sokongan";
+      });
+
+      document.getElementById("btn-unlock-fallback").addEventListener("click", () => {
+        if (!state.activeClueId) return;
+        playSfx("click");
+        markAudioListened(state.activeClueId);
+      });
+
+      // Tutup modal menggunakan kekunci Escape
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+          if (!document.getElementById("clue-modal").classList.contains("hidden")) {
+            closeClueModal();
+          } else if (!document.getElementById("guide-modal").classList.contains("hidden")) {
+            closeModal("guide-modal");
+          } else if (!document.getElementById("diff-modal").classList.contains("hidden")) {
+            closeModal("diff-modal");
+          } else if (!document.getElementById("final-modal").classList.contains("hidden")) {
+            closeModal("final-modal");
+          }
+        }
+      });
+    });
+  </script>
+</body>
+</html>
